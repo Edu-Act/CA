@@ -372,6 +372,7 @@
 
     .expand-header input[type="radio"]:disabled {
       cursor: not-allowed;
+      opacity: 0.4;
     }
 
     .expand-header .header-content {
@@ -431,6 +432,7 @@
 
     .header-check-items input[type="radio"]:disabled {
       cursor: not-allowed;
+      opacity: 0.4;
     }
 
     /* ── Text Area ── */
@@ -447,6 +449,7 @@
       overflow-y: auto;
       scrollbar-width: none;
       -ms-overflow-style: none;
+      text-align: justify;
     }
     .form-textarea::-webkit-scrollbar { display: none; }
 
@@ -609,6 +612,13 @@
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
+    .reload-step-spinner {
+      width: 16px; height: 16px;
+      border: 2px solid #ddd;
+      border-top-color: #4a7cdf;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
 
     /* ── 인쇄 전용 헤더 ── */
     .print-header-area {
@@ -640,19 +650,28 @@
         padding-left: 6em;
         text-indent: -6em;
       }
-      .print-result-line {
-        font-size: 14px;
-        color: #000;
-        margin-top: 12px;
-        font-weight: 400;
+      .print-reasons {
+        margin-top: 1.6em;
+        font-size: 13px;
+        color: #222;
+        line-height: 1.7;
       }
-      .print-result-line .r-label {
-        font-weight: 400;
-        color: #000;
+      .print-reason-block {
+        margin-bottom: 1.2em;
       }
-      .print-result-line .r-value {
-        font-weight: 400;
+      .print-reason-title {
+        font-weight: 700;
+        font-size: 13px;
         color: #000;
+        margin-bottom: 4px;
+      }
+      .print-reason-text {
+        font-weight: 400;
+        font-size: 13px;
+        color: #333;
+        white-space: pre-wrap;
+        padding-left: 1em;
+        text-align: justify;
       }
       .top-bar, .panel-resizer, .main-container {
         display: none !important;
@@ -666,7 +685,7 @@
   <div class="print-header-area" id="printHeaderArea">
     <div class="print-title-line" id="printTitleLine"></div>
     <div class="print-apa-line" id="printApa"></div>
-    <div class="print-result-line"><span class="r-label">분석결과 : </span><span class="r-value" id="printResult"></span></div>
+    <div class="print-reasons" id="printReasons"></div>
   </div>
 
   <!-- ── 저장 확인 모달 ── -->
@@ -706,7 +725,10 @@
           <span class="logout-step-icon" id="lStep4Icon" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#ccc;font-size:10px;">●</span></span>
           <span>로그아웃 완료</span>
         </div>
-        <div id="logoutCountdown" style="display:none; text-align:center; margin-top:12px; font-size:14px; font-weight:600; color:#d9534f;"></div>
+        <div class="logout-step" id="lStep5" style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#888;">
+          <span class="logout-step-icon" id="lStep5Icon" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#ccc;font-size:10px;">●</span></span>
+          <span id="lStep5Text">로그인 페이지로 이동 중...</span>
+        </div>
       </div>
     </div>
   </div>
@@ -729,6 +751,33 @@
     </div>
   </div>
 
+  <!-- ── Reload 진행 모달 ── -->
+  <div class="modal-overlay" id="reloadModal">
+    <div class="modal-box" style="min-width: 360px; text-align: left;">
+      <p style="font-weight:700; font-size:15px; margin-bottom:14px; text-align:center;">데이터 새로고침</p>
+      <div class="reload-step" id="rStep1" style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#888;">
+        <span class="reload-step-icon" id="rStep1Icon" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#ccc;font-size:10px;">●</span></span>
+        <span>데이터 서버에 연결 중...</span>
+      </div>
+      <div class="reload-step" id="rStep2" style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#888;">
+        <span class="reload-step-icon" id="rStep2Icon" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#ccc;font-size:10px;">●</span></span>
+        <span>전체 분석 데이터 로딩 중...</span>
+      </div>
+      <div class="reload-step" id="rStep3" style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#888;">
+        <span class="reload-step-icon" id="rStep3Icon" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#ccc;font-size:10px;">●</span></span>
+        <span>데이터 캐시 갱신 중...</span>
+      </div>
+      <div class="reload-step" id="rStep4" style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#888;">
+        <span class="reload-step-icon" id="rStep4Icon" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#ccc;font-size:10px;">●</span></span>
+        <span>화면 갱신 중...</span>
+      </div>
+      <div class="reload-step" id="rStep5" style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#888;">
+        <span class="reload-step-icon" id="rStep5Icon" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#ccc;font-size:10px;">●</span></span>
+        <span>새로고침 완료</span>
+      </div>
+    </div>
+  </div>
+
   <!-- 분류 추가 팝오버는 각 cat-group 안에 동적으로 생성됨 -->
 
   <!-- ── 알림 모달 ── -->
@@ -746,7 +795,7 @@
     <div class="top-row">
       <div class="top-left">
         <span class="field-label">APA</span>
-        <div id="apaDisplay" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 400; font-size: 15px; color: #555; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1; min-width: 0; padding: 7px 0; cursor: default; user-select: text;"></div>
+        <div id="apaDisplay" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 400; font-size: 15px; color: #000; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1; min-width: 0; padding: 7px 0; cursor: default; user-select: text;"></div>
         <input type="text" id="apaUrlField" style="display:none; flex: 1; min-width: 0;" />
         <button class="btn btn-secondary" id="btnModifyApa" style="min-width: 72px; flex-shrink: 0;" onclick="toggleModifyApa()">Modify</button>
       </div>
@@ -923,6 +972,10 @@
       if (email) {
         document.getElementById('userEmail').textContent = email;
         sessionStorage.setItem('userEmail', email);
+      }
+      // URL에서 email 파라미터 제거 (주소창 노출 방지)
+      if (params.has('email')) {
+        window.history.replaceState({}, '', window.location.pathname);
       }
     })();
 
@@ -1185,7 +1238,43 @@
         return;
       }
       pendingSaveType = type;
-      document.getElementById('confirmSaveModal').classList.add('show');
+
+      // 활성 섹션의 중앙에 모달 배치
+      var modal = document.getElementById('confirmSaveModal');
+      var modalBox = modal.querySelector('.modal-box');
+      var sectionMap = {
+        noevidence: 'sectionNoEvidence',
+        categories: 'sectionCategories',
+        sufficient: 'sectionSufficient'
+      };
+      var sectionId = sectionMap[type];
+      var sectionEl = sectionId ? document.getElementById(sectionId) : null;
+
+      if (sectionEl) {
+        var rect = sectionEl.getBoundingClientRect();
+        var sectionCenterY = rect.top + rect.height / 2;
+        var boxHeight = 160; // 예상 모달 높이
+        var topPos = sectionCenterY - boxHeight / 2 - boxHeight / 2;
+        // 화면 범위 내로 제한
+        topPos = Math.max(10, Math.min(topPos, window.innerHeight - boxHeight - 10));
+        modal.style.alignItems = 'flex-start';
+        modalBox.style.marginTop = topPos + 'px';
+
+        // 가로 중앙 정렬
+        var sectionCenterX = rect.left + rect.width / 2;
+        var boxWidth = 340; // min-width of modal-box
+        var leftPos = sectionCenterX - boxWidth / 2;
+        leftPos = Math.max(10, Math.min(leftPos, window.innerWidth - boxWidth - 10));
+        modal.style.justifyContent = 'flex-start';
+        modalBox.style.marginLeft = leftPos + 'px';
+      } else {
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modalBox.style.marginTop = '';
+        modalBox.style.marginLeft = '';
+      }
+
+      modal.classList.add('show');
     }
 
     function resetConfirmSaveModal() {
@@ -1199,7 +1288,13 @@
 
     function closeConfirmSaveModal() {
       var type = pendingSaveType;
-      document.getElementById('confirmSaveModal').classList.remove('show');
+      var modal = document.getElementById('confirmSaveModal');
+      modal.classList.remove('show');
+      modal.style.alignItems = '';
+      modal.style.justifyContent = '';
+      var mBox = modal.querySelector('.modal-box');
+      mBox.style.marginTop = '';
+      mBox.style.marginLeft = '';
       pendingSaveType = null;
       // 취소 시 modify 모드 복원 (저장 완료 후에는 이미 finish됨)
       if (type === 'pdf' && isModifyMode) {
@@ -1256,6 +1351,29 @@
       }
     }
 
+    // 체크 상태에 따라 라디오 버튼 비활성화
+    function updateRadioDisabledState() {
+      var noEvChecked = document.getElementById('checkNoEvidence').classList.contains('visible');
+      var sufChecked = document.getElementById('checkSufficient').classList.contains('visible');
+      var catChecked = ['checkCat1','checkCat2','checkCat3','checkCat4','checkCat5'].some(function(id) {
+        return document.getElementById(id).classList.contains('visible');
+      });
+
+      // 무근거 체크 → 카테고리(chk1~5), 충분(chkSufficient) 비활성
+      // 충분 체크 → 무근거(chkNoEvidence), 카테고리(chk1~5) 비활성
+      // 카테고리 중 하나라도 체크 → 무근거(chkNoEvidence), 충분(chkSufficient) 비활성
+
+      var disableNoEv = sufChecked || catChecked;
+      var disableSuf = noEvChecked || catChecked;
+      var disableCats = noEvChecked || sufChecked;
+
+      document.getElementById('chkNoEvidence').disabled = disableNoEv;
+      document.getElementById('chkSufficient').disabled = disableSuf;
+      ['chk1','chk2','chk3','chk4','chk5'].forEach(function(id) {
+        document.getElementById(id).disabled = disableCats;
+      });
+    }
+
     function updateResultLabel(colJ) {
       if (colJ !== undefined && colJ !== null) {
         var jStr = String(colJ);
@@ -1276,11 +1394,11 @@
         var colLVal = mText ? '1' : '0';
         var colMVal = mText || '';
 
-        var saveUrl = GAS_URL + '?action=saveNoEvidence&row=' + currentRow
-          + '&colL=' + encodeURIComponent(colLVal)
-          + '&colM=' + encodeURIComponent(colMVal);
-
-        fetch(saveUrl)
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'saveNoEvidence', row: currentRow, colL: colLVal, colM: colMVal })
+        })
           .then(function(r) { return r.json(); })
           .then(function(res) {
             if (res.success) {
@@ -1291,6 +1409,7 @@
               }
               // 체크 표시 업데이트
               setCheckVisible(document.getElementById('checkNoEvidence'), colLVal === '1');
+              updateRadioDisabledState();
               // 결과(J열) 갱신
               updateResultLabel(res.colJ);
               takeSnapshot('noevidence');
@@ -1310,11 +1429,11 @@
         var colAMVal = anText ? '1' : '0';
         var colANVal = anText || '';
 
-        var saveUrl = GAS_URL + '?action=saveSufficient&row=' + currentRow
-          + '&colAM=' + encodeURIComponent(colAMVal)
-          + '&colAN=' + encodeURIComponent(colANVal);
-
-        fetch(saveUrl)
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'saveSufficient', row: currentRow, colAM: colAMVal, colAN: colANVal })
+        })
           .then(function(r) { return r.json(); })
           .then(function(res) {
             if (res.success) {
@@ -1323,6 +1442,7 @@
                 allRowsCache[dataIndex].colAN = colANVal;
               }
               setCheckVisible(document.getElementById('checkSufficient'), colAMVal === '1');
+              updateRadioDisabledState();
               // 결과(J열) 갱신
               updateResultLabel(res.colJ);
               takeSnapshot('sufficient');
@@ -1347,15 +1467,11 @@
         var cat3Val = document.getElementById('cat3').value || '';
         var flagVal = textVal ? '1' : '0';
 
-        var saveUrl = GAS_URL + '?action=saveCategories&row=' + currentRow
-          + '&startCol=' + info.startCol
-          + '&flagVal=' + encodeURIComponent(flagVal)
-          + '&textVal=' + encodeURIComponent(textVal)
-          + '&cat1Val=' + encodeURIComponent(cat1Val)
-          + '&cat2Val=' + encodeURIComponent(cat2Val)
-          + '&cat3Val=' + encodeURIComponent(cat3Val);
-
-        fetch(saveUrl)
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'saveCategories', row: currentRow, startCol: info.startCol, flagVal: flagVal, textVal: textVal, cat1Val: cat1Val, cat2Val: cat2Val, cat3Val: cat3Val })
+        })
           .then(function(r) { return r.json(); })
           .then(function(res) {
             if (res.success) {
@@ -1369,6 +1485,7 @@
               }
               // 체크 표시 업데이트
               setCheckVisible(document.getElementById(info.checkId), flagVal === '1');
+              updateRadioDisabledState();
               updateResultLabel(res.colJ);
               takeSnapshot('cat');
               showConfirmSaveDone('저장되었습니다.');
@@ -1384,8 +1501,11 @@
 
       if (type === 'pdf') {
         var pdfVal = document.getElementById('pdfUrlField').value;
-        var saveUrl = GAS_URL + '?action=saveField&row=' + currentRow + '&col=9&value=' + encodeURIComponent(pdfVal);
-        fetch(saveUrl)
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'saveField', row: currentRow, col: 9, value: pdfVal })
+        })
           .then(function(r) { return r.json(); })
           .then(function(res) {
             if (res.success) {
@@ -1404,8 +1524,11 @@
 
       if (type === 'apa') {
         var apaVal = document.getElementById('apaUrlField').value;
-        var saveUrl = GAS_URL + '?action=saveField&row=' + currentRow + '&col=8&value=' + encodeURIComponent(apaVal);
-        fetch(saveUrl)
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'saveField', row: currentRow, col: 8, value: apaVal })
+        })
           .then(function(r) { return r.json(); })
           .then(function(res) {
             if (res.success) {
@@ -1659,6 +1782,9 @@
         setCheckVisible(document.getElementById('checkSufficient'), true);
       }
 
+      // 체크 상태에 따라 라디오 버튼 비활성화 업데이트
+      updateRadioDisabledState();
+
       // PDF placeholder 복원
       var panel = document.getElementById('pdfPanel');
       var iframe = panel.querySelector('iframe');
@@ -1838,7 +1964,109 @@
     });
 
     // ── Actions ──
-    function reloadData() { dataLoaded = false; loadAllData(true); }
+    function setReloadStepState(stepNum, state) {
+      var item = document.getElementById('rStep' + stepNum);
+      var icon = document.getElementById('rStep' + stepNum + 'Icon');
+      item.style.color = state === 'done' ? '#2e7d32' : state === 'active' ? '#333' : state === 'error' ? '#d9534f' : '#888';
+      item.style.fontWeight = state === 'active' ? '500' : 'normal';
+      if (state === 'active') {
+        icon.innerHTML = '<div class="reload-step-spinner"></div>';
+      } else if (state === 'done') {
+        icon.innerHTML = '<span style="color:#2e7d32;font-weight:900;font-size:15px;">✓</span>';
+      } else if (state === 'error') {
+        icon.innerHTML = '<span style="color:#d9534f;font-weight:900;font-size:15px;">✕</span>';
+      } else {
+        icon.innerHTML = '<span style="color:#ccc;font-size:10px;">●</span>';
+      }
+    }
+
+    function resetReloadSteps() {
+      for (var i = 1; i <= 5; i++) setReloadStepState(i, 'wait');
+    }
+
+    async function reloadData() {
+      dataLoaded = false;
+      // 모달 표시
+      resetReloadSteps();
+      var reloadModal = document.getElementById('reloadModal');
+      var reloadBox = reloadModal.querySelector('.modal-box');
+      // 오른쪽 패널(form-panel) 가로 중앙에 배치
+      var formPanel = document.querySelector('.form-panel');
+      if (formPanel) {
+        var rect = formPanel.getBoundingClientRect();
+        var panelCenterX = rect.left + rect.width / 2;
+        var boxWidth = 360;
+        var leftPos = panelCenterX - boxWidth / 2;
+        leftPos = Math.max(10, Math.min(leftPos, window.innerWidth - boxWidth - 10));
+        reloadModal.style.justifyContent = 'flex-start';
+        reloadBox.style.marginLeft = leftPos + 'px';
+      }
+      reloadModal.classList.add('show');
+
+      // Step 1: 서버 연결
+      setReloadStepState(1, 'active');
+      await sleepMs(400);
+
+      try {
+        setReloadStepState(1, 'done');
+
+        // Step 2: 데이터 로딩
+        setReloadStepState(2, 'active');
+
+        var response = await fetch(GAS_URL + '?action=getAllData');
+        var result = await response.json();
+
+        if (!result.success) {
+          setReloadStepState(2, 'error');
+          await sleepMs(1000);
+          document.getElementById('reloadModal').classList.remove('show');
+          showAlertModal(result.message || '데이터를 불러올 수 없습니다.');
+          return;
+        }
+
+        allRowsCache = result.rows;
+        dataLoaded = true;
+        dataIndex = 0;
+        setReloadStepState(2, 'done');
+
+        // Step 3: 캐시 갱신
+        setReloadStepState(3, 'active');
+        await sleepMs(300);
+        try {
+          sessionStorage.setItem('allRowsCache', JSON.stringify(result.rows));
+          sessionStorage.setItem('dataLoaded', 'true');
+        } catch(e) {
+          try {
+            localStorage.setItem('allRowsCache', JSON.stringify(result.rows));
+            localStorage.setItem('dataLoaded', 'true');
+            sessionStorage.setItem('dataStorageType', 'local');
+          } catch(e2) {}
+        }
+        setReloadStepState(3, 'done');
+
+        // Step 4: 화면 갱신
+        setReloadStepState(4, 'active');
+        await sleepMs(300);
+        if (allRowsCache.length > 0) {
+          displayCurrentRow();
+        }
+        setReloadStepState(4, 'done');
+
+        // Step 5: 완료
+        setReloadStepState(5, 'active');
+        await sleepMs(200);
+        setReloadStepState(5, 'done');
+
+        await sleepMs(600);
+        document.getElementById('reloadModal').classList.remove('show');
+
+      } catch(err) {
+        setReloadStepState(2, 'error');
+        await sleepMs(1000);
+        document.getElementById('reloadModal').classList.remove('show');
+        showAlertModal('서버 연결 오류: ' + err.message);
+      }
+    }
     function openSheet() { window.open('https://docs.google.com/spreadsheets/d/1cjLPZ13HsKBWOrLOrK3znGBHoAYUaO3HlSHmtLpAIPY/edit?gid=839042060#gid=839042060', '_blank'); }
     function printPage() {
       var d = allRowsCache[dataIndex];
@@ -1847,18 +2075,65 @@
         var noStr = String(d.colA || '');
         while (noStr.length < 3) noStr = '0' + noStr;
 
-        // 제목줄: {001} 학술지명 - 범주
+        // 제목줄: {001} 학술지명 - 범주 - 분석결과
         var journal = d.colB || '';
         var category = d.colG || '';
-        document.getElementById('printTitleLine').textContent = '{' + noStr + '} ' + journal + ' - ' + category;
+        var result = d.colJ || '';
+        document.getElementById('printTitleLine').textContent = '{' + noStr + '} ' + journal + ' - ' + category + ' - ' + result;
 
         // APA (학술지명+권 굵게)
         document.getElementById('printApa').innerHTML = formatAPA(d.colH || '', d.colB || '');
 
-        // 분석결과
-        document.getElementById('printResult').textContent = d.colJ || '';
+        // 판정 사유
+        var reasonsHtml = '';
+
+        // 무근거 혹은 불충분 근거
+        if (d.colL && String(d.colL).trim() === '1' && d.colM) {
+          reasonsHtml += '<div class="print-reason-block">';
+          reasonsHtml += '<div class="print-reason-title">* 무근거 혹은 불충분 근거 판정 사유</div>';
+          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colM) + '</div>';
+          reasonsHtml += '</div>';
+        }
+
+        // 관습적 ~ 기타 (순서대로)
+        var catItems = [
+          { flag: 'colN', text: 'colO', c1: 'colP', c2: 'colQ', c3: 'colR', name: '관습적' },
+          { flag: 'colS', text: 'colT', c1: 'colU', c2: 'colV', c3: 'colW', name: '용병학문적' },
+          { flag: 'colX', text: 'colY', c1: 'colZ', c2: 'colAA', c3: 'colAB', name: '기능주의적' },
+          { flag: 'colAC', text: 'colAD', c1: 'colAE', c2: 'colAF', c3: 'colAG', name: '개념 혼동' },
+          { flag: 'colAH', text: 'colAI', c1: 'colAJ', c2: 'colAK', c3: 'colAL', name: '기타' }
+        ];
+        catItems.forEach(function(cat) {
+          if (d[cat.flag] && String(d[cat.flag]).trim() === '1' && d[cat.text]) {
+            // 분류 표시
+            var cats = [d[cat.c1], d[cat.c2], d[cat.c3]].filter(function(v) {
+              return v && String(v).trim() && String(v).trim() !== '1차 분류' && String(v).trim() !== '2차 분류' && String(v).trim() !== '3차 분류';
+            });
+            var catSuffix = cats.length > 0 ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[' + cats.join('] - [') + ']' : '';
+            reasonsHtml += '<div class="print-reason-block">';
+            reasonsHtml += '<div class="print-reason-title">* ' + cat.name + ' 판정 사유' + catSuffix + '</div>';
+            reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d[cat.text]) + '</div>';
+            reasonsHtml += '</div>';
+          }
+        });
+
+        // 충분 혹은 양호
+        if (d.colAM && String(d.colAM).trim() === '1' && d.colAN) {
+          reasonsHtml += '<div class="print-reason-block">';
+          reasonsHtml += '<div class="print-reason-title">* 충분 혹은 양호 판정 사유</div>';
+          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colAN) + '</div>';
+          reasonsHtml += '</div>';
+        }
+
+        document.getElementById('printReasons').innerHTML = reasonsHtml;
       }
       window.print();
+    }
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     // ── 로그아웃 ──
@@ -1867,7 +2142,6 @@
       document.getElementById('logoutTitle').textContent = '정말 로그아웃 하시겠습니까?';
       document.getElementById('logoutBtns').style.display = '';
       document.getElementById('logoutSteps').style.display = 'none';
-      document.getElementById('logoutCountdown').style.display = 'none';
       resetLogoutSteps();
       document.getElementById('logoutModal').classList.add('show');
     }
@@ -1890,7 +2164,8 @@
     }
 
     function resetLogoutSteps() {
-      for (var i = 1; i <= 4; i++) setLogoutStepState(i, 'wait');
+      for (var i = 1; i <= 5; i++) setLogoutStepState(i, 'wait');
+      document.getElementById('lStep5Text').textContent = '로그인 페이지로 이동 중...';
     }
 
     function sleepMs(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
@@ -1934,19 +2209,19 @@
       setLogoutStepState(4, 'done');
       document.getElementById('logoutTitle').textContent = '로그아웃이 완료되었습니다.';
 
-      // 카운트다운 (3초)
-      var countdownEl = document.getElementById('logoutCountdown');
-      countdownEl.style.display = '';
+      // Step 5: 카운트다운 (3초)
+      setLogoutStepState(5, 'active');
       var remaining = 3;
-      countdownEl.textContent = remaining + '초 후 로그인 페이지로 이동합니다.';
+      document.getElementById('lStep5Text').textContent = remaining + '초 후 로그인 페이지로 이동합니다.';
 
       var interval = setInterval(function() {
         remaining--;
         if (remaining > 0) {
-          countdownEl.textContent = remaining + '초 후 로그인 페이지로 이동합니다.';
+          document.getElementById('lStep5Text').textContent = remaining + '초 후 로그인 페이지로 이동합니다.';
         } else {
           clearInterval(interval);
-          countdownEl.textContent = '이동 중...';
+          document.getElementById('lStep5Text').textContent = '로그인 페이지로 이동 중...';
+          setLogoutStepState(5, 'done');
           window.location.href = 'index.html';
         }
       }, 1000);
