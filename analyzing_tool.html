@@ -1,0 +1,2119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concept Analyzer - Analyzing Tool</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Top Bar ── */
+    .top-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .top-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 38px;
+    }
+
+    .top-left {
+      flex: 0 0 60%;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow: hidden;
+    }
+
+    .top-right {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
+    .field-label {
+      font-weight: 600;
+      color: #555;
+      min-width: 36px;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .top-bar input[type="text"] {
+      padding: 7px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 13px;
+      background: #fafbfc;
+      transition: border-color 0.2s;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .top-bar input[type="text"]:focus {
+      border-color: #5b9bd5;
+      outline: none;
+    }
+
+    .top-bar input[type="text"]:disabled {
+      background: #eee;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    #pdfUrlField:disabled {
+      background: transparent;
+      color: #aaa;
+      border-color: transparent;
+      cursor: default;
+    }
+    #apaUrlField:disabled {
+      background: transparent;
+      color: #555;
+      border-color: transparent;
+      cursor: default;
+      font-size: 15px;
+      font-weight: 400;
+    }
+    #apaUrlField:not(:disabled) {
+      background: #fafbfc;
+      border-color: #ccc;
+      font-size: 15px;
+    }
+    #pdfUrlField:not(:disabled) {
+      background: #fafbfc;
+      border-color: #ccc;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 7px 16px;
+      border: none;
+      border-radius: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-primary { background: #4a7cdf; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #3a65c0; }
+    .btn-secondary { background: #6c757d; color: #fff; }
+    .btn-secondary:hover:not(:disabled) { background: #5a6268; }
+    .btn-success { background: #28a745; color: #fff; }
+    .btn-success:hover:not(:disabled) { background: #218838; }
+    .btn-info { background: #17a2b8; color: #fff; }
+    .btn-info:hover:not(:disabled) { background: #138496; }
+    .btn-warning { background: #ffc107; color: #333; }
+    .btn-warning:hover:not(:disabled) { background: #e0a800; }
+    .btn-save-section {
+      background: #4a7cdf;
+      color: #fff;
+      padding: 7px 16px;
+      font-size: 13px;
+    }
+    .btn-save-section:hover:not(:disabled) { background: #3a65c0; }
+
+    /* ── Navigation ── */
+    .nav-btn {
+      height: 34px;
+      min-width: auto;
+      padding: 0 12px;
+      display: flex; align-items: center; justify-content: center;
+      background: #4a7cdf; color: #fff; border: none; border-radius: 5px;
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+      flex-shrink: 0; white-space: nowrap;
+    }
+    .nav-btn:hover { background: #3a65c0; }
+
+    .nav-input {
+      height: 34px; padding: 0; background: #fff; border: 1px solid #ccc;
+      border-radius: 5px; font-weight: 600; font-size: 13px;
+      text-align: center; width: 64px; min-width: 64px; max-width: 64px;
+      flex: none;
+    }
+    .nav-input:focus { border-color: #5b9bd5; outline: none; }
+
+    .action-group { display: flex; gap: 6px; margin-left: 12px; }
+    .action-btn-h { height: 34px; padding: 0 16px; display: flex; align-items: center; }
+
+    /* ── Main Layout ── */
+    .main-container {
+      display: flex;
+      padding: 16px;
+      flex: 1;
+      min-height: 0;
+      gap: 0;
+    }
+
+    /* ── Left: PDF Viewer ── */
+    .pdf-panel {
+      flex: 0 0 60%;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+      position: relative;
+    }
+
+    /* ── Resizer Handle ── */
+    .panel-resizer {
+      flex: 0 0 12px;
+      cursor: col-resize;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .panel-resizer::after {
+      content: '';
+      width: 4px;
+      height: 36px;
+      border-radius: 2px;
+      background: #ccc;
+      transition: background 0.2s;
+    }
+    .panel-resizer:hover::after,
+    .panel-resizer.dragging::after {
+      background: #999;
+    }
+
+    .pdf-panel iframe { width: 100%; height: 100%; border: none; }
+    .pdf-panel::-webkit-scrollbar { width: 8px; }
+    .pdf-panel::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 4px; }
+    .pdf-panel::-webkit-scrollbar-thumb { background: #bbb; border-radius: 4px; }
+    .pdf-panel::-webkit-scrollbar-thumb:hover { background: #999; }
+    .pdf-placeholder { color: #aaa; font-size: 16px; font-weight: 500; }
+
+    /* ── Right: Form Panel ── */
+    .form-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 4px;
+      container-type: inline-size;
+      container-name: formPanel;
+      min-width: 0;
+    }
+
+    @container formPanel (max-width: 320px) {
+      .col-labels { font-size: 11px; gap: 6px; }
+      .col-labels .chip { font-size: 14px; }
+      .col-labels .result-label { font-size: 12px; }
+      .expand-header { padding: 6px 8px; font-size: 12px; gap: 6px; }
+      .expand-header input[type="radio"] { width: 14px; height: 14px; }
+      .expand-header .header-content { gap: 6px; font-size: 12px; }
+      .expand-header .header-content label { font-size: 12px; }
+      .section-check { font-size: 13px !important; }
+      .btn-save-section { font-size: 11px; padding: 4px 10px; }
+      .form-textarea { font-size: 12px; padding: 6px 10px; }
+      .expand-body { font-size: 12px; }
+      .expand-body select { font-size: 11px; }
+      .expand-body .cat-row label { font-size: 11px; }
+      .expand-body .cat-row button { font-size: 11px; padding: 4px 8px; }
+    }
+
+    @container formPanel (max-width: 200px) {
+      .col-labels { font-size: 9px; gap: 4px; }
+      .col-labels .chip { font-size: 14px; }
+      .col-labels .result-label { font-size: 10px; }
+      .expand-header { padding: 4px 6px; font-size: 10px; gap: 4px; }
+      .expand-header input[type="radio"] { width: 12px; height: 12px; }
+      .expand-header .header-content { gap: 4px; font-size: 10px; }
+      .expand-header .header-content label { font-size: 10px; }
+      .section-check { font-size: 11px !important; }
+      .btn-save-section { font-size: 9px; padding: 3px 6px; }
+      .form-textarea { font-size: 10px; padding: 4px 8px; }
+      .expand-body { font-size: 10px; }
+      .expand-body select { font-size: 9px; }
+      .expand-body .cat-row label { font-size: 9px; }
+      .expand-body .cat-row button { font-size: 9px; padding: 3px 6px; }
+    }
+
+    .form-panel::-webkit-scrollbar { display: none; }
+    .form-panel { scrollbar-width: none; -ms-overflow-style: none; }
+
+    /* ── Column Labels ── */
+    .col-labels {
+      display: flex;
+      gap: 14px;
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+      padding: 4px 0;
+      flex-wrap: nowrap;
+      overflow: hidden;
+      white-space: nowrap;
+      min-height: 30px;
+      align-items: center;
+    }
+
+    .col-labels .chip {
+      padding: 4px 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+      background: #e8edf3;
+      border-radius: 20px;
+      color: #3a506b;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      flex: none;
+      width: auto;
+      max-width: 16em;
+    }
+
+    .col-labels .chip:empty {
+      background: transparent;
+      padding: 4px 0;
+      min-width: 0;
+    }
+
+    .col-labels .result-label {
+      margin-left: auto;
+      text-align: right;
+      padding: 4px 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-weight: 800;
+      color: #444;
+      font-size: 16px;
+      line-height: 24px;
+      min-height: 24px;
+    }
+
+    /* ── Expandable Section ── */
+    .expand-section {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+
+    .expand-section.active {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .expand-section.disabled-section .expand-body {
+      opacity: 0.45;
+    }
+    .expand-section.disabled-section .header-save {
+      opacity: 0.45;
+    }
+
+    .section-check {
+      visibility: hidden;
+      color: #2e7d32;
+      font-weight: 900;
+      font-size: 17px;
+      margin-left: 3px;
+      vertical-align: middle;
+      display: inline-block;
+      width: 14px;
+    }
+    .section-check.visible {
+      visibility: visible;
+    }
+    .section-check-bold {
+      font-weight: 800;
+    }
+
+    .expand-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      user-select: none;
+    }
+
+    .expand-header input[type="radio"] {
+      width: 17px; height: 17px;
+      accent-color: #4a7cdf;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .expand-header input[type="radio"]:disabled {
+      cursor: not-allowed;
+    }
+
+    .expand-header .header-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .expand-header .header-save {
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .expand-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+
+    .expand-section.active .expand-body {
+      max-height: 800px;
+    }
+
+    /* ── Section Colors ── */
+    .section-noevidence .expand-header { background: #f5f5f5; }
+    .section-noevidence.active .expand-header { background: #eee; }
+
+    .section-categories .expand-header { background: #fef0f3; }
+    .section-categories.active .expand-header { background: #fce4ec; }
+
+    .section-sufficient .expand-header { background: #e3f2fd; }
+    .section-sufficient.active .expand-header { background: #bbdefb; }
+
+    /* ── Header checkbox items (카테고리) ── */
+    .header-check-items {
+      display: flex;
+      gap: 22px;
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+
+    .header-check-items label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .header-check-items input[type="radio"] {
+      width: 17px; height: 17px;
+      accent-color: #4a7cdf;
+      cursor: pointer;
+    }
+
+    .header-check-items input[type="radio"]:disabled {
+      cursor: not-allowed;
+    }
+
+    /* ── Text Area ── */
+    .form-textarea {
+      width: 100%;
+      border: none;
+      border-top: 1px solid #e0e0e0;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      background: #fafbfc;
+      transition: border-color 0.2s;
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .form-textarea::-webkit-scrollbar { display: none; }
+
+    .form-textarea:focus {
+      outline: none;
+      background: #fff;
+    }
+
+    .textarea-tall { height: 520px; max-height: 520px; }
+
+    /* ── Category Dropdowns ── */
+    .cat-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px 12px;
+      justify-content: space-between;
+    }
+
+    .cat-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      position: relative;
+    }
+
+    .cat-popover {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border-radius: 10px;
+      padding: 16px 18px;
+      min-width: 220px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.18);
+      z-index: 1001;
+      text-align: center;
+    }
+    .cat-popover.show { display: block; }
+    .cat-popover p {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .cat-popover input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+    }
+    .cat-popover .popover-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .cat-popover .popover-buttons button {
+      padding: 6px 16px;
+      border-radius: 6px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .cat-popover .pop-cancel {
+      background: #e9ecef;
+      color: #555;
+    }
+    .cat-popover .pop-cancel:hover { background: #dde0e3; }
+    .cat-popover .pop-confirm {
+      background: #4a7cdf;
+      color: #fff;
+    }
+    .cat-popover .pop-confirm:hover { background: #3a6bcf; }
+    .cat-popover::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 7px solid transparent;
+      border-top-color: #fff;
+    }
+
+    .cat-group select {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 13px;
+      background: #fafbfc;
+      min-width: 180px;
+      cursor: pointer;
+    }
+
+    .cat-group select:focus { border-color: #5b9bd5; outline: none; }
+
+    .cat-add-btn {
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      background: #e9ecef; border: 1px solid #ccc; border-radius: 5px;
+      font-size: 16px; font-weight: 700; color: #555;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .cat-add-btn:hover { background: #dde0e3; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: #fff;
+      border-radius: 10px;
+      padding: 28px 32px;
+      min-width: 340px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    .modal-box p {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 24px;
+      color: #333;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .modal-btn {
+      padding: 9px 28px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .modal-btn-cancel { background: #e9ecef; color: #333; }
+    .modal-btn-cancel:hover { background: #dde0e3; }
+    .modal-btn-save { background: #4a7cdf; color: #fff; }
+    .modal-btn-save:hover { background: #3a65c0; }
+
+    /* ── Logout step spinner ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .logout-step-spinner {
+      width: 16px; height: 16px;
+      border: 2px solid #ddd;
+      border-top-color: #d9534f;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* ── 인쇄 전용 헤더 ── */
+    .print-header-area {
+      display: none;
+    }
+
+    @page {
+      size: letter;
+      margin: 20mm;
+    }
+    @media print {
+      .print-header-area {
+        display: block !important;
+        padding: 20px 24px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        text-align: left;
+      }
+      .print-title-line {
+        font-size: 15px;
+        font-weight: 800;
+        color: #222;
+        margin-bottom: 1.6em;
+      }
+      .print-apa-line {
+        font-size: 14px;
+        color: #222;
+        line-height: 1.6;
+        margin-top: 4px;
+        padding-left: 6em;
+        text-indent: -6em;
+      }
+      .print-result-line {
+        font-size: 14px;
+        color: #000;
+        margin-top: 12px;
+        font-weight: 400;
+      }
+      .print-result-line .r-label {
+        font-weight: 400;
+        color: #000;
+      }
+      .print-result-line .r-value {
+        font-weight: 400;
+        color: #000;
+      }
+      .top-bar, .panel-resizer, .main-container {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── 인쇄 전용 헤더 (화면에서는 숨김, 인쇄시만 표시) ── -->
+  <div class="print-header-area" id="printHeaderArea">
+    <div class="print-title-line" id="printTitleLine"></div>
+    <div class="print-apa-line" id="printApa"></div>
+    <div class="print-result-line"><span class="r-label">분석결과 : </span><span class="r-value" id="printResult"></span></div>
+  </div>
+
+  <!-- ── 저장 확인 모달 ── -->
+  <div class="modal-overlay" id="saveModal">
+    <div class="modal-box">
+      <p>판정 근거를 수정하셨습니다. 수정된 내용을 저장하시겠습니까?</p>
+      <div class="modal-buttons" style="gap: 8px;">
+        <button class="modal-btn modal-btn-cancel" onclick="modalStay()">선택 취소</button>
+        <button class="modal-btn modal-btn-cancel" onclick="modalCancel()">저장 없이 이동</button>
+        <button class="modal-btn modal-btn-save" onclick="modalSave()">저장 후 이동</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 로그아웃 확인 모달 ── -->
+  <div class="modal-overlay" id="logoutModal">
+    <div class="modal-box" style="min-width: 380px;">
+      <p id="logoutTitle">정말 로그아웃 하시겠습니까?</p>
+      <div class="modal-buttons" id="logoutBtns">
+        <button class="modal-btn modal-btn-cancel" onclick="closeLogoutModal()">취소</button>
+        <button class="modal-btn modal-btn-save" style="background:#d9534f;" onclick="performLogout()">로그아웃</button>
+      </div>
+      <div id="logoutSteps" style="display:none; text-align:left; margin-top:8px;">
+        <div class="logout-step" id="lStep1" style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#888;">
+          <span class="logout-step-icon" id="lStep1Icon" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#ccc;font-size:10px;">●</span></span>
+          <span>분석 데이터 캐시 삭제 중...</span>
+        </div>
+        <div class="logout-step" id="lStep2" style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#888;">
+          <span class="logout-step-icon" id="lStep2Icon" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#ccc;font-size:10px;">●</span></span>
+          <span>사용자 세션 정보 삭제 중...</span>
+        </div>
+        <div class="logout-step" id="lStep3" style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#888;">
+          <span class="logout-step-icon" id="lStep3Icon" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#ccc;font-size:10px;">●</span></span>
+          <span>분석 환경 정리 중...</span>
+        </div>
+        <div class="logout-step" id="lStep4" style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:#888;">
+          <span class="logout-step-icon" id="lStep4Icon" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#ccc;font-size:10px;">●</span></span>
+          <span>로그아웃 완료</span>
+        </div>
+        <div id="logoutCountdown" style="display:none; text-align:center; margin-top:12px; font-size:14px; font-weight:600; color:#d9534f;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 저장 확인 모달 ── -->
+  <div class="modal-overlay" id="confirmSaveModal">
+    <div class="modal-box">
+      <p id="confirmSaveMsg">자료를 저장하시겠습니까?</p>
+      <div class="modal-buttons" id="confirmSaveBtns">
+        <button class="modal-btn modal-btn-cancel" onclick="closeConfirmSaveModal()">취소</button>
+        <button class="modal-btn modal-btn-save" onclick="proceedSave()">저장</button>
+      </div>
+      <p id="confirmSaveLoading" style="display:none; text-align:center; color:#4a7cdf; font-weight:600;">자료를 저장 중입니다...</p>
+      <div class="modal-buttons" id="confirmSaveLoadingBtns" style="display:none;">
+        <button class="modal-btn modal-btn-save" disabled style="opacity:0.5;">저장 중...</button>
+      </div>
+      <div class="modal-buttons" id="confirmSaveDone" style="display:none;">
+        <button class="modal-btn modal-btn-save" onclick="closeConfirmSaveModal()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 분류 추가 팝오버는 각 cat-group 안에 동적으로 생성됨 -->
+
+  <!-- ── 알림 모달 ── -->
+  <div class="modal-overlay" id="alertModal">
+    <div class="modal-box">
+      <p id="alertModalMsg"></p>
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-save" onclick="closeAlertModal()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Top Bar ── -->
+  <div class="top-bar">
+    <div class="top-row">
+      <div class="top-left">
+        <span class="field-label">APA</span>
+        <div id="apaDisplay" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 400; font-size: 15px; color: #555; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1; min-width: 0; padding: 7px 0; cursor: default; user-select: text;"></div>
+        <input type="text" id="apaUrlField" style="display:none; flex: 1; min-width: 0;" />
+        <button class="btn btn-secondary" id="btnModifyApa" style="min-width: 72px; flex-shrink: 0;" onclick="toggleModifyApa()">Modify</button>
+      </div>
+      <div class="top-right">
+        <span id="userEmail" style="font-size: 15px; color: #888; margin-right: 8px; white-space: nowrap;"></span>
+        <button class="nav-btn" onclick="navPrev()">Prev.</button>
+        <input type="text" class="nav-input" id="navLabel" value="No." />
+        <button class="nav-btn" onclick="navNext()">Next</button>
+        <div class="action-group">
+          <button class="btn btn-info action-btn-h" onclick="reloadData()">Reload</button>
+          <button class="btn btn-success action-btn-h" onclick="openSheet()">Sheet</button>
+          <button class="btn btn-warning action-btn-h" onclick="printPage()">Print</button>
+          <button class="btn btn-secondary action-btn-h" onclick="confirmLogout()">Log-out</button>
+        </div>
+      </div>
+    </div>
+    <div class="top-row">
+      <div class="top-left">
+        <span class="field-label">PDF</span>
+        <input type="text" id="pdfUrlField" disabled />
+        <button class="btn btn-primary" onclick="loadPdf()">Load</button>
+        <button class="btn btn-warning" style="min-width: 56px;" onclick="printPdf()">Print</button>
+        <button class="btn btn-secondary" id="btnModify" style="min-width: 72px;" onclick="toggleModify()">Modify</button>
+      </div>
+      <div class="top-right" style="justify-content: flex-start; flex: 1; min-width: 0;">
+        <div class="col-labels" style="width: 100%;">
+          <span class="chip"></span>
+          <span class="chip" id="colGSpan"></span>
+          <span class="result-label" style="flex: 0 0 auto; min-width: 0;"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main Content ── -->
+  <div class="main-container">
+
+    <div class="pdf-panel" id="pdfPanel">
+      <span class="pdf-placeholder" id="pdfPlaceholder">상단의 Load 버튼을 클릭하면 해당 연구물의 PDF가 보여집니다.</span>
+    </div>
+
+    <div class="panel-resizer" id="panelResizer"></div>
+
+    <div class="form-panel">
+
+      <!-- ① 무근거 혹은 불충분 근거 -->
+      <div class="expand-section section-noevidence" id="sectionNoEvidence">
+        <div class="expand-header">
+          <input type="radio" name="sectionRadio" id="chkNoEvidence" onclick="onRadioClick(event, 'noevidence')" />
+          <div class="header-content">
+            <label for="chkNoEvidence" style="cursor:pointer;">무근거 혹은 불충분 근거</label><span class="section-check" id="checkNoEvidence">✓</span>
+          </div>
+          <button class="btn btn-save-section header-save" id="btnSaveNoEvidence" onclick="saveSection('noevidence')" disabled>Save</button>
+        </div>
+        <div class="expand-body">
+          <textarea class="form-textarea textarea-tall" id="mColField" placeholder="판정 근거를 입력하세요..."></textarea>
+        </div>
+      </div>
+
+      <!-- ② 관습적 ~ 기타 -->
+      <div class="expand-section section-categories" id="sectionCategories">
+        <div class="expand-header">
+          <div class="header-content">
+            <div class="header-check-items">
+              <label><input type="radio" name="sectionRadio" id="chk1" onclick="onRadioClick(event, 'cat')" /> 관습적<span class="section-check" id="checkCat1">✓</span></label>
+              <label><input type="radio" name="sectionRadio" id="chk2" onclick="onRadioClick(event, 'cat')" /> 용병학문적<span class="section-check" id="checkCat2">✓</span></label>
+              <label><input type="radio" name="sectionRadio" id="chk3" onclick="onRadioClick(event, 'cat')" /> 기능주의적<span class="section-check" id="checkCat3">✓</span></label>
+              <label><input type="radio" name="sectionRadio" id="chk4" onclick="onRadioClick(event, 'cat')" /> 개념 혼동<span class="section-check" id="checkCat4">✓</span></label>
+              <label><input type="radio" name="sectionRadio" id="chk5" onclick="onRadioClick(event, 'cat')" /> 기타<span class="section-check" id="checkCat5">✓</span></label>
+            </div>
+          </div>
+          <button class="btn btn-save-section header-save" id="btnSaveCategories" onclick="saveSection('categories')" disabled>Save</button>
+        </div>
+        <div class="expand-body">
+          <textarea class="form-textarea textarea-tall" id="analysisField" placeholder="판정 근거를 입력하세요..."></textarea>
+          <div class="cat-row">
+            <div class="cat-group" id="catGroup1">
+              <select id="cat1"><option>1차 분류</option></select>
+              <button class="cat-add-btn" onclick="addCatOption('cat1')">+</button>
+              <div class="cat-popover" id="catPopover1">
+                <p>새로운 1차 분류명 입력</p>
+                <input type="text" id="catPopInput1" placeholder="분류명을 입력하세요..." />
+                <div class="popover-buttons">
+                  <button class="pop-cancel" onclick="closePopover('cat1')">취소</button>
+                  <button class="pop-confirm" onclick="confirmPopover('cat1')">추가</button>
+                </div>
+              </div>
+            </div>
+            <div class="cat-group" id="catGroup2">
+              <select id="cat2"><option>2차 분류</option></select>
+              <button class="cat-add-btn" onclick="addCatOption('cat2')">+</button>
+              <div class="cat-popover" id="catPopover2">
+                <p>새로운 2차 분류명 입력</p>
+                <input type="text" id="catPopInput2" placeholder="분류명을 입력하세요..." />
+                <div class="popover-buttons">
+                  <button class="pop-cancel" onclick="closePopover('cat2')">취소</button>
+                  <button class="pop-confirm" onclick="confirmPopover('cat2')">추가</button>
+                </div>
+              </div>
+            </div>
+            <div class="cat-group" id="catGroup3">
+              <select id="cat3"><option>3차 분류</option></select>
+              <button class="cat-add-btn" onclick="addCatOption('cat3')">+</button>
+              <div class="cat-popover" id="catPopover3">
+                <p>새로운 3차 분류명 입력</p>
+                <input type="text" id="catPopInput3" placeholder="분류명을 입력하세요..." />
+                <div class="popover-buttons">
+                  <button class="pop-cancel" onclick="closePopover('cat3')">취소</button>
+                  <button class="pop-confirm" onclick="confirmPopover('cat3')">추가</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ 충분 혹은 양호 -->
+      <div class="expand-section section-sufficient" id="sectionSufficient">
+        <div class="expand-header">
+          <input type="radio" name="sectionRadio" id="chkSufficient" onclick="onRadioClick(event, 'sufficient')" />
+          <div class="header-content">
+            <label for="chkSufficient" style="cursor:pointer;">충분 혹은 양호</label><span class="section-check" id="checkSufficient">✓</span>
+          </div>
+          <button class="btn btn-save-section header-save" id="btnSaveSufficient" onclick="saveSection('sufficient')" disabled>Save</button>
+        </div>
+        <div class="expand-body">
+          <textarea class="form-textarea textarea-tall" id="anColField" placeholder="판정 근거를 입력하세요..."></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbymfrHvJsVThc7RtoAOjn8ZOLkoJdMb1CVcfUQJm4fvY53a9FxOCBhJek-4Xl6YN0lcDg/exec';
+    let currentRow = 2;
+
+    // ── APA 서식 적용 (학술지명과 권을 굵게) ──
+    function formatAPA(apaText, journalName) {
+      if (!apaText) return '';
+      // HTML 이스케이프
+      var safe = apaText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+      if (journalName && journalName.trim()) {
+        var jName = journalName.trim();
+        var jNameSafe = jName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        // 학술지명 위치 찾기
+        var idx = safe.indexOf(jNameSafe);
+        if (idx !== -1) {
+          // 학술지명 뒤에 이어지는 ", 숫자" 패턴이 권(volume)
+          var afterJournal = safe.substring(idx + jNameSafe.length);
+          var volMatch = afterJournal.match(/^(,\s*)(\d+)/);
+          if (volMatch) {
+            // 학술지명 + ", 권" 을 굵게
+            var before = safe.substring(0, idx);
+            var boldPart = '<b>' + jNameSafe + volMatch[1] + volMatch[2] + '</b>';
+            var after = afterJournal.substring(volMatch[0].length);
+            return before + boldPart + after;
+          } else {
+            // 권 번호가 없으면 학술지명만 굵게
+            var before = safe.substring(0, idx);
+            var after = safe.substring(idx + jNameSafe.length);
+            return before + '<b>' + jNameSafe + '</b>' + after;
+          }
+        }
+      }
+      return safe;
+    }
+
+    // ── 로그인 사용자 이메일 표시 ──
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get('email') || sessionStorage.getItem('userEmail') || '';
+      if (email) {
+        document.getElementById('userEmail').textContent = email;
+        sessionStorage.setItem('userEmail', email);
+      }
+    })();
+
+    const catRadioIds = ['chk1','chk2','chk3','chk4','chk5'];
+
+    // ── 현재 활성 섹션 & 저장된 상태 추적 ──
+    let activeSection = null; // 'noevidence' | 'cat' | 'sufficient' | null
+    let savedSnapshots = {
+      noevidence: '',
+      cat: '',
+      sufficient: ''
+    };
+
+    // 현재 활성 섹션의 텍스트 영역 ID
+    function getTextareaId(section) {
+      if (section === 'noevidence') return 'mColField';
+      if (section === 'cat') return 'analysisField';
+      if (section === 'sufficient') return 'anColField';
+      return null;
+    }
+
+    // 현재 섹션이 수정되었는지 확인
+    function isSectionDirty(section) {
+      if (!section) return false;
+      const tid = getTextareaId(section);
+      if (!tid) return false;
+      return document.getElementById(tid).value !== savedSnapshots[section];
+    }
+
+    // 스냅샷 저장 (현재 상태를 "깨끗한" 상태로 기록)
+    function takeSnapshot(section) {
+      if (!section) return;
+      const tid = getTextareaId(section);
+      if (tid) savedSnapshots[section] = document.getElementById(tid).value;
+    }
+
+    // ── 모달 관련 ──
+    let pendingTarget = null; // 이동 대기 중인 타겟 섹션
+    let pendingAction = null; // 'switch' | 'deselect'
+
+    function showModal(targetSection) {
+      pendingTarget = targetSection;
+      pendingAction = 'switch';
+      document.getElementById('saveModal').classList.add('show');
+    }
+
+    function modalStay() {
+      // 선택 취소: 모달 닫고 현재 상태 유지 (라디오를 원래대로 복원)
+      document.getElementById('saveModal').classList.remove('show');
+      if (lastCheckedRadioId) {
+        document.getElementById(lastCheckedRadioId).checked = true;
+      }
+      pendingTarget = null;
+      pendingAction = null;
+    }
+
+    function modalCancel() {
+      document.getElementById('saveModal').classList.remove('show');
+      // 수정 내용을 이전 상태로 복원
+      if (activeSection) {
+        const tid = getTextareaId(activeSection);
+        if (tid) {
+          document.getElementById(tid).value = savedSnapshots[activeSection];
+        }
+      }
+      if (pendingAction === 'deselect') {
+        completeDeselect();
+      } else if (pendingAction === 'cat-switch') {
+        // cat 내부 전환: 라디오만 변경, 섹션 유지
+        const targetRadio = document.getElementById(pendingTarget);
+        if (targetRadio) targetRadio.checked = true;
+        lastCheckedRadioId = pendingTarget;
+        loadCatData();
+        takeSnapshot('cat');
+      } else {
+        completeSwitch(pendingTarget);
+      }
+      pendingTarget = null;
+      pendingAction = null;
+    }
+
+    function modalSave() {
+      document.getElementById('saveModal').classList.remove('show');
+      saveSection(activeSection);
+      if (pendingAction === 'deselect') {
+        completeDeselect();
+      } else if (pendingAction === 'cat-switch') {
+        // cat 내부 전환: 저장 후 라디오만 변경, 섹션 유지
+        const targetRadio = document.getElementById(pendingTarget);
+        if (targetRadio) targetRadio.checked = true;
+        lastCheckedRadioId = pendingTarget;
+        loadCatData();
+        takeSnapshot('cat');
+      } else {
+        completeSwitch(pendingTarget);
+      }
+      pendingTarget = null;
+      pendingAction = null;
+    }
+
+    // ── 마지막 체크된 라디오 ID 추적 (cat 내부 전환 감지용) ──
+    let lastCheckedRadioId = null;
+
+    // ── 라디오 클릭 핸들러 (해제 지원) ──
+    function onRadioClick(event, targetSection) {
+      const radio = event.target;
+
+      // 같은 섹션 내에서의 클릭
+      if (activeSection === targetSection) {
+        // 같은 라디오를 다시 클릭 → 해제 시도
+        if (radio.id === lastCheckedRadioId) {
+          if (isSectionDirty(activeSection)) {
+            pendingAction = 'deselect';
+            pendingTarget = null;
+            document.getElementById('saveModal').classList.add('show');
+            return;
+          }
+          setTimeout(function() { completeDeselect(); }, 0);
+          return;
+        }
+        // cat 섹션 내에서 다른 라디오 선택 → dirty면 모달
+        if (isSectionDirty(activeSection)) {
+          event.preventDefault();
+          pendingAction = 'cat-switch';
+          pendingTarget = radio.id;
+          document.getElementById('saveModal').classList.add('show');
+          return;
+        }
+        lastCheckedRadioId = radio.id;
+        loadCatData();
+        takeSnapshot('cat');
+        return;
+      }
+
+      // 다른 섹션으로 전환
+      if (activeSection && isSectionDirty(activeSection)) {
+        event.preventDefault();
+        pendingAction = 'switch';
+        showModal(targetSection);
+        return;
+      }
+      completeSwitch(targetSection);
+      lastCheckedRadioId = radio.id;
+    }
+
+    // 모든 라디오 해제 & 섹션 닫기
+    function completeDeselect() {
+      const allRadios = document.querySelectorAll('input[name="sectionRadio"]');
+      allRadios.forEach(r => r.checked = false);
+
+      const sectionNoEv = document.getElementById('sectionNoEvidence');
+      const sectionCat = document.getElementById('sectionCategories');
+      const sectionSuf = document.getElementById('sectionSufficient');
+
+      sectionNoEv.classList.remove('active', 'disabled-section');
+      sectionCat.classList.remove('active', 'disabled-section');
+      sectionSuf.classList.remove('active', 'disabled-section');
+
+      document.getElementById('btnSaveNoEvidence').disabled = true;
+      document.getElementById('btnSaveCategories').disabled = true;
+      document.getElementById('btnSaveSufficient').disabled = true;
+
+      activeSection = null;
+      lastCheckedRadioId = null;
+    }
+
+    // 카테고리 라디오에 따라 해당 열 데이터를 텍스트/드롭다운에 로드
+    function loadCatData() {
+      if (!allRowsCache[dataIndex]) return;
+      var d = allRowsCache[dataIndex];
+      var info = getSelectedCatInfo();
+      if (!info) return;
+
+      var textVal = d[info.textKey] || '';
+      var c1Val = d[info.c1Key] || '';
+      var c2Val = d[info.c2Key] || '';
+      var c3Val = d[info.c3Key] || '';
+
+      document.getElementById('analysisField').value = textVal;
+      // 드롭다운 옵션 로드 후 값 설정
+      populateCatDropdowns();
+      setDropdownValue('cat1', c1Val);
+      setDropdownValue('cat2', c2Val);
+      setDropdownValue('cat3', c3Val);
+    }
+
+    // 드롭다운에 값 설정 (옵션이 없으면 추가)
+    function setDropdownValue(selectId, val) {
+      var sel = document.getElementById(selectId);
+      if (!val) { sel.value = ''; return; }
+      // 기존 옵션에서 찾기
+      for (var i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === val || sel.options[i].textContent === val) {
+          sel.selectedIndex = i; return;
+        }
+      }
+      // 없으면 옵션 추가 후 선택
+      var opt = document.createElement('option');
+      opt.value = val; opt.textContent = val;
+      sel.appendChild(opt);
+      sel.value = val;
+    }
+
+    function completeSwitch(targetSection) {
+      const sectionNoEv = document.getElementById('sectionNoEvidence');
+      const sectionCat = document.getElementById('sectionCategories');
+      const sectionSuf = document.getElementById('sectionSufficient');
+
+      // 모든 섹션 비활성화
+      sectionNoEv.classList.remove('active', 'disabled-section');
+      sectionCat.classList.remove('active', 'disabled-section');
+      sectionSuf.classList.remove('active', 'disabled-section');
+
+      // 타겟 섹션 활성화
+      if (targetSection === 'noevidence') {
+        sectionNoEv.classList.add('active');
+        sectionCat.classList.add('disabled-section');
+        sectionSuf.classList.add('disabled-section');
+        document.getElementById('btnSaveNoEvidence').disabled = false;
+        document.getElementById('btnSaveCategories').disabled = true;
+        document.getElementById('btnSaveSufficient').disabled = true;
+        // M열 값 로드
+        if (allRowsCache[dataIndex]) {
+          var d = allRowsCache[dataIndex];
+          document.getElementById('mColField').value = d.colM || '';
+        }
+      } else if (targetSection === 'cat') {
+        sectionCat.classList.add('active');
+        sectionNoEv.classList.add('disabled-section');
+        sectionSuf.classList.add('disabled-section');
+        document.getElementById('btnSaveNoEvidence').disabled = true;
+        document.getElementById('btnSaveCategories').disabled = false;
+        document.getElementById('btnSaveSufficient').disabled = true;
+        // 선택된 카테고리 라디오에 따라 데이터 로드
+        loadCatData();
+      } else if (targetSection === 'sufficient') {
+        sectionSuf.classList.add('active');
+        sectionNoEv.classList.add('disabled-section');
+        sectionCat.classList.add('disabled-section');
+        document.getElementById('btnSaveNoEvidence').disabled = true;
+        document.getElementById('btnSaveCategories').disabled = true;
+        document.getElementById('btnSaveSufficient').disabled = false;
+        // AN열 값 로드
+        if (allRowsCache[dataIndex]) {
+          var d = allRowsCache[dataIndex];
+          document.getElementById('anColField').value = d.colAN || '';
+        }
+      }
+
+      activeSection = targetSection;
+      takeSnapshot(targetSection);
+    }
+
+    // ── 저장 확인 모달 ──
+    var pendingSaveType = null;
+
+    function saveSection(type) {
+      if (!currentRow || currentRow < 2) {
+        showAlertModal('저장할 데이터가 선택되지 않았습니다.');
+        return;
+      }
+      pendingSaveType = type;
+      document.getElementById('confirmSaveModal').classList.add('show');
+    }
+
+    function resetConfirmSaveModal() {
+      document.getElementById('confirmSaveMsg').textContent = '자료를 저장하시겠습니까?';
+      document.getElementById('confirmSaveMsg').style.display = '';
+      document.getElementById('confirmSaveBtns').style.display = '';
+      document.getElementById('confirmSaveLoading').style.display = 'none';
+      document.getElementById('confirmSaveLoadingBtns').style.display = 'none';
+      document.getElementById('confirmSaveDone').style.display = 'none';
+    }
+
+    function closeConfirmSaveModal() {
+      var type = pendingSaveType;
+      document.getElementById('confirmSaveModal').classList.remove('show');
+      pendingSaveType = null;
+      // 취소 시 modify 모드 복원 (저장 완료 후에는 이미 finish됨)
+      if (type === 'pdf' && isModifyMode) {
+        // Save 취소 → 편집 상태 유지 (모달만 닫힘)
+      }
+      if (type === 'apa' && isModifyModeApa) {
+        // Save 취소 → 편집 상태 유지 (모달만 닫힘)
+      }
+      setTimeout(resetConfirmSaveModal, 200);
+    }
+
+    function showConfirmSaveLoading() {
+      document.getElementById('confirmSaveMsg').style.display = 'none';
+      document.getElementById('confirmSaveBtns').style.display = 'none';
+      document.getElementById('confirmSaveLoading').style.display = '';
+      document.getElementById('confirmSaveLoadingBtns').style.display = '';
+    }
+
+    function showConfirmSaveDone(msg) {
+      document.getElementById('confirmSaveLoading').style.display = 'none';
+      document.getElementById('confirmSaveLoadingBtns').style.display = 'none';
+      document.getElementById('confirmSaveMsg').textContent = msg;
+      document.getElementById('confirmSaveMsg').style.display = '';
+      document.getElementById('confirmSaveDone').style.display = '';
+    }
+
+    function proceedSave() {
+      var type = pendingSaveType;
+      if (!type) return;
+      showConfirmSaveLoading();
+      doSave(type);
+    }
+
+    function setCheckVisible(checkEl, visible) {
+      if (!checkEl) return;
+      if (visible) {
+        checkEl.classList.add('visible');
+      } else {
+        checkEl.classList.remove('visible');
+      }
+      // label 찾기
+      var label = checkEl.closest('label');
+      if (!label) {
+        // 무근거/충분: check 바로 앞의 label 형제
+        var el = checkEl.previousElementSibling;
+        while (el) {
+          if (el.tagName === 'LABEL') { label = el; break; }
+          el = el.previousElementSibling;
+        }
+      }
+      if (label) {
+        if (visible) { label.style.fontWeight = '800'; }
+        else { label.style.fontWeight = ''; }
+      }
+    }
+
+    function updateResultLabel(colJ) {
+      if (colJ !== undefined && colJ !== null) {
+        var jStr = String(colJ);
+        if (allRowsCache[dataIndex]) {
+          allRowsCache[dataIndex].colJ = jStr;
+        }
+        var labels = document.querySelector('.col-labels');
+        if (labels) {
+          var spans = labels.querySelectorAll('span');
+          if (spans[2]) spans[2].textContent = jStr ? '{ ' + jStr + ' }' : '';
+        }
+      }
+    }
+
+    function doSave(type) {
+      if (type === 'noevidence') {
+        var mText = document.getElementById('mColField').value.trim();
+        var colLVal = mText ? '1' : '0';
+        var colMVal = mText || '';
+
+        var saveUrl = GAS_URL + '?action=saveNoEvidence&row=' + currentRow
+          + '&colL=' + encodeURIComponent(colLVal)
+          + '&colM=' + encodeURIComponent(colMVal);
+
+        fetch(saveUrl)
+          .then(function(r) { return r.json(); })
+          .then(function(res) {
+            if (res.success) {
+              // 캐시 업데이트
+              if (allRowsCache[dataIndex]) {
+                allRowsCache[dataIndex].colL = colLVal;
+                allRowsCache[dataIndex].colM = colMVal;
+              }
+              // 체크 표시 업데이트
+              setCheckVisible(document.getElementById('checkNoEvidence'), colLVal === '1');
+              // 결과(J열) 갱신
+              updateResultLabel(res.colJ);
+              takeSnapshot('noevidence');
+              showConfirmSaveDone('저장되었습니다.');
+            } else {
+              showConfirmSaveDone('저장 실패: ' + (res.message || '알 수 없는 오류'));
+            }
+          })
+          .catch(function(err) {
+            showConfirmSaveDone('저장 중 오류가 발생했습니다.');
+          });
+        return;
+      }
+
+      if (type === 'sufficient') {
+        var anText = document.getElementById('anColField').value.trim();
+        var colAMVal = anText ? '1' : '0';
+        var colANVal = anText || '';
+
+        var saveUrl = GAS_URL + '?action=saveSufficient&row=' + currentRow
+          + '&colAM=' + encodeURIComponent(colAMVal)
+          + '&colAN=' + encodeURIComponent(colANVal);
+
+        fetch(saveUrl)
+          .then(function(r) { return r.json(); })
+          .then(function(res) {
+            if (res.success) {
+              if (allRowsCache[dataIndex]) {
+                allRowsCache[dataIndex].colAM = colAMVal;
+                allRowsCache[dataIndex].colAN = colANVal;
+              }
+              setCheckVisible(document.getElementById('checkSufficient'), colAMVal === '1');
+              // 결과(J열) 갱신
+              updateResultLabel(res.colJ);
+              takeSnapshot('sufficient');
+              showConfirmSaveDone('저장되었습니다.');
+            } else {
+              showConfirmSaveDone('저장 실패: ' + (res.message || '알 수 없는 오류'));
+            }
+          })
+          .catch(function(err) {
+            showConfirmSaveDone('저장 중 오류가 발생했습니다.');
+          });
+        return;
+      }
+
+      if (type === 'categories') {
+        var info = getSelectedCatInfo();
+        if (!info) { showConfirmSaveDone('카테고리를 선택해주세요.'); return; }
+
+        var textVal = document.getElementById('analysisField').value.trim();
+        var cat1Val = document.getElementById('cat1').value || '';
+        var cat2Val = document.getElementById('cat2').value || '';
+        var cat3Val = document.getElementById('cat3').value || '';
+        var flagVal = textVal ? '1' : '0';
+
+        var saveUrl = GAS_URL + '?action=saveCategories&row=' + currentRow
+          + '&startCol=' + info.startCol
+          + '&flagVal=' + encodeURIComponent(flagVal)
+          + '&textVal=' + encodeURIComponent(textVal)
+          + '&cat1Val=' + encodeURIComponent(cat1Val)
+          + '&cat2Val=' + encodeURIComponent(cat2Val)
+          + '&cat3Val=' + encodeURIComponent(cat3Val);
+
+        fetch(saveUrl)
+          .then(function(r) { return r.json(); })
+          .then(function(res) {
+            if (res.success) {
+              // 캐시 업데이트
+              if (allRowsCache[dataIndex]) {
+                allRowsCache[dataIndex][info.flagKey] = flagVal;
+                allRowsCache[dataIndex][info.textKey] = textVal;
+                allRowsCache[dataIndex][info.c1Key] = cat1Val;
+                allRowsCache[dataIndex][info.c2Key] = cat2Val;
+                allRowsCache[dataIndex][info.c3Key] = cat3Val;
+              }
+              // 체크 표시 업데이트
+              setCheckVisible(document.getElementById(info.checkId), flagVal === '1');
+              updateResultLabel(res.colJ);
+              takeSnapshot('cat');
+              showConfirmSaveDone('저장되었습니다.');
+            } else {
+              showConfirmSaveDone('저장 실패: ' + (res.message || '알 수 없는 오류'));
+            }
+          })
+          .catch(function(err) {
+            showConfirmSaveDone('저장 중 오류가 발생했습니다.');
+          });
+        return;
+      }
+
+      if (type === 'pdf') {
+        var pdfVal = document.getElementById('pdfUrlField').value;
+        var saveUrl = GAS_URL + '?action=saveField&row=' + currentRow + '&col=9&value=' + encodeURIComponent(pdfVal);
+        fetch(saveUrl)
+          .then(function(r) { return r.json(); })
+          .then(function(res) {
+            if (res.success) {
+              if (allRowsCache[dataIndex]) allRowsCache[dataIndex].colI = pdfVal;
+              finishPdfModify();
+              showConfirmSaveDone('저장되었습니다.');
+            } else {
+              showConfirmSaveDone('저장 실패: ' + (res.message || '알 수 없는 오류'));
+            }
+          })
+          .catch(function(err) {
+            showConfirmSaveDone('저장 중 오류가 발생했습니다.');
+          });
+        return;
+      }
+
+      if (type === 'apa') {
+        var apaVal = document.getElementById('apaUrlField').value;
+        var saveUrl = GAS_URL + '?action=saveField&row=' + currentRow + '&col=8&value=' + encodeURIComponent(apaVal);
+        fetch(saveUrl)
+          .then(function(r) { return r.json(); })
+          .then(function(res) {
+            if (res.success) {
+              if (allRowsCache[dataIndex]) {
+                allRowsCache[dataIndex].colH = apaVal;
+                document.getElementById('apaDisplay').innerHTML = formatAPA(apaVal, allRowsCache[dataIndex].colB || '');
+              }
+              finishApaModify();
+              showConfirmSaveDone('저장되었습니다.');
+            } else {
+              showConfirmSaveDone('저장 실패: ' + (res.message || '알 수 없는 오류'));
+            }
+          })
+          .catch(function(err) {
+            showConfirmSaveDone('저장 중 오류가 발생했습니다.');
+          });
+        return;
+      }
+    }
+
+    // ── 알림 모달 ──
+    function showAlertModal(msg) {
+      document.getElementById('alertModalMsg').textContent = msg;
+      document.getElementById('alertModal').classList.add('show');
+    }
+    function closeAlertModal() {
+      document.getElementById('alertModal').classList.remove('show');
+    }
+
+    // ── PDF ──
+    // ── PDF 인쇄 ──
+    function printPdf() {
+      var url = document.getElementById('pdfUrlField').value.trim();
+      if (!url) {
+        showAlertModal('인쇄할 PDF가 로드되지 않았습니다.');
+        return;
+      }
+      var driveMatch = url.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
+      if (driveMatch) {
+        window.open('https://drive.google.com/file/d/' + driveMatch[1] + '/view', '_blank');
+      } else {
+        window.open(url, '_blank');
+      }
+    }
+
+    function loadPdf() {
+      const url = document.getElementById('pdfUrlField').value.trim();
+      if (!url) {
+        showAlertModal('PDF URL이 입력되지 않았습니다.');
+        return;
+      }
+      // URL 형식 기본 검증
+      try {
+        new URL(url);
+      } catch (e) {
+        showAlertModal('유효하지 않은 URL 형식입니다.');
+        return;
+      }
+
+      const panel = document.getElementById('pdfPanel');
+      const placeholder = document.getElementById('pdfPlaceholder');
+      if (placeholder) placeholder.remove();
+      let iframe = panel.querySelector('iframe');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        panel.appendChild(iframe);
+      }
+
+      // 로드 실패 감지
+      iframe.onerror = function() {
+        showAlertModal('PDF를 불러올 수 없습니다. URL을 확인해주세요.');
+      };
+      iframe.onload = function() {
+        try {
+          // cross-origin이면 접근 불가 → 정상 로드로 간주
+          const doc = iframe.contentDocument;
+          if (doc && doc.body && doc.body.innerText === '') {
+            showAlertModal('PDF를 불러올 수 없습니다. URL을 확인해주세요.');
+          }
+        } catch (e) {
+          // cross-origin: 정상 로드로 간주
+        }
+      };
+      // Google Drive URL을 embed/preview 형태로 변환
+      var loadUrl = url;
+      var driveMatch = url.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
+      if (driveMatch) {
+        loadUrl = 'https://drive.google.com/file/d/' + driveMatch[1] + '/preview';
+      }
+      iframe.src = loadUrl;
+    }
+
+    // ── Modify / Save 토글 (PDF URL) ──
+    let isModifyMode = false;
+    function toggleModify() {
+      const btn = document.getElementById('btnModify');
+      const field = document.getElementById('pdfUrlField');
+      if (!isModifyMode) {
+        field.disabled = false;
+        field.focus();
+        btn.textContent = 'Save';
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+        isModifyMode = true;
+      } else {
+        // 모달로 저장 확인
+        saveSection('pdf');
+      }
+    }
+
+    function finishPdfModify() {
+      var field = document.getElementById('pdfUrlField');
+      var btn = document.getElementById('btnModify');
+      field.disabled = true;
+      btn.textContent = 'Modify';
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-secondary');
+      isModifyMode = false;
+    }
+
+    // ── Modify / Save 토글 (APA) ──
+    let isModifyModeApa = false;
+    function toggleModifyApa() {
+      const btn = document.getElementById('btnModifyApa');
+      const field = document.getElementById('apaUrlField');
+      const display = document.getElementById('apaDisplay');
+      if (!isModifyModeApa) {
+        field.value = allRowsCache[dataIndex] ? (allRowsCache[dataIndex].colH || '') : '';
+        display.style.display = 'none';
+        field.style.display = '';
+        field.disabled = false;
+        field.focus();
+        btn.textContent = 'Save';
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+        isModifyModeApa = true;
+      } else {
+        // 모달로 저장 확인
+        saveSection('apa');
+      }
+    }
+
+    function finishApaModify() {
+      var field = document.getElementById('apaUrlField');
+      var display = document.getElementById('apaDisplay');
+      var btn = document.getElementById('btnModifyApa');
+      field.style.display = 'none';
+      field.disabled = true;
+      display.style.display = '';
+      btn.textContent = 'Modify';
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-secondary');
+      isModifyModeApa = false;
+    }
+
+    // ── 데이터 캐시 (전체 한 번에 로드) ──
+    let allRowsCache = []; // [{row, colA, colB, colG, colH, colI, colJ}, ...]
+    let dataIndex = 0;     // 현재 표시 중인 캐시 인덱스
+    let dataLoaded = false;
+
+    // 세자리 숫자 패딩 (예: 1 → "001", 12 → "012", 123 → "123")
+    function padThreeDigits(val) {
+      var num = parseInt(String(val), 10);
+      if (isNaN(num)) return String(val);
+      return String(num).padStart(3, '0');
+    }
+
+    function updateNavLabel() {
+      if (allRowsCache.length > 0 && dataIndex >= 0 && dataIndex < allRowsCache.length) {
+        document.getElementById('navLabel').value = padThreeDigits(allRowsCache[dataIndex].colA);
+      }
+    }
+
+    // 캐시에서 현재 인덱스의 데이터를 화면에 표시
+    function displayCurrentRow() {
+      if (!dataLoaded || allRowsCache.length === 0) return;
+      if (dataIndex < 0) dataIndex = 0;
+      if (dataIndex >= allRowsCache.length) dataIndex = allRowsCache.length - 1;
+
+      var d = allRowsCache[dataIndex];
+      currentRow = d.row;
+
+      document.getElementById('navLabel').value = padThreeDigits(d.colA) || padThreeDigits(currentRow);
+      document.getElementById('apaDisplay').innerHTML = formatAPA(d.colH || '', d.colB || '');
+      document.getElementById('pdfUrlField').value = d.colI || '';
+
+      // Modify 모드 초기화
+      if (isModifyMode) {
+        document.getElementById('pdfUrlField').disabled = true;
+        document.getElementById('btnModify').textContent = 'Modify';
+        document.getElementById('btnModify').classList.remove('btn-primary');
+        document.getElementById('btnModify').classList.add('btn-secondary');
+        isModifyMode = false;
+      }
+      if (isModifyModeApa) {
+        document.getElementById('apaUrlField').style.display = 'none';
+        document.getElementById('apaUrlField').disabled = true;
+        document.getElementById('apaDisplay').style.display = '';
+        document.getElementById('btnModifyApa').textContent = 'Modify';
+        document.getElementById('btnModifyApa').classList.remove('btn-primary');
+        document.getElementById('btnModifyApa').classList.add('btn-secondary');
+        isModifyModeApa = false;
+      }
+
+      var labels = document.querySelector('.col-labels');
+      if (labels) {
+        var spans = labels.querySelectorAll('span');
+        if (spans[0]) spans[0].textContent = d.colB || '';
+        if (spans[1]) {
+          spans[1].textContent = d.colG || '';
+        }
+        if (spans[2]) spans[2].textContent = d.colJ ? '{ ' + d.colJ + ' }' : '';
+      }
+
+      // 섹션 초기화
+      completeDeselect();
+      document.getElementById('mColField').value = '';
+      document.getElementById('analysisField').value = '';
+      document.getElementById('anColField').value = '';
+      // 드롭다운 초기화
+      document.getElementById('cat1').selectedIndex = 0;
+      document.getElementById('cat2').selectedIndex = 0;
+      document.getElementById('cat3').selectedIndex = 0;
+      savedSnapshots = { noevidence: '', cat: '', sufficient: '' };
+
+      // 체크 표시 초기화
+      setCheckVisible(document.getElementById('checkNoEvidence'), false);
+      setCheckVisible(document.getElementById('checkSufficient'), false);
+      setCheckVisible(document.getElementById('checkCat1'), false);
+      setCheckVisible(document.getElementById('checkCat2'), false);
+      setCheckVisible(document.getElementById('checkCat3'), false);
+      setCheckVisible(document.getElementById('checkCat4'), false);
+      setCheckVisible(document.getElementById('checkCat5'), false);
+
+      // L열 값에 따라 체크 표시만 (섹션 확장 없음)
+      if (d.colL && String(d.colL).trim() === '1') {
+        savedSnapshots.noevidence = d.colM || '';
+        setCheckVisible(document.getElementById('checkNoEvidence'), true);
+      }
+
+      // N열(관습적), S열(용병학문적), X열(기능주의적), AC열(개념 혼동), AH열(기타)
+      if (d.colN && String(d.colN).trim() === '1') setCheckVisible(document.getElementById('checkCat1'), true);
+      if (d.colS && String(d.colS).trim() === '1') setCheckVisible(document.getElementById('checkCat2'), true);
+      if (d.colX && String(d.colX).trim() === '1') setCheckVisible(document.getElementById('checkCat3'), true);
+      if (d.colAC && String(d.colAC).trim() === '1') setCheckVisible(document.getElementById('checkCat4'), true);
+      if (d.colAH && String(d.colAH).trim() === '1') setCheckVisible(document.getElementById('checkCat5'), true);
+
+      // AM열 값에 따라 체크 표시만 (섹션 확장 없음)
+      if (d.colAM && String(d.colAM).trim() === '1') {
+        savedSnapshots.sufficient = d.colAN || '';
+        setCheckVisible(document.getElementById('checkSufficient'), true);
+      }
+
+      // PDF placeholder 복원
+      var panel = document.getElementById('pdfPanel');
+      var iframe = panel.querySelector('iframe');
+      if (iframe) iframe.remove();
+      if (!document.getElementById('pdfPlaceholder')) {
+        var ph = document.createElement('span');
+        ph.className = 'pdf-placeholder';
+        ph.id = 'pdfPlaceholder';
+        ph.textContent = '상단의 Load 버튼을 클릭하면 해당 연구물의 PDF가 보여집니다.';
+        panel.appendChild(ph);
+      }
+    }
+
+    // 전체 데이터를 캐시에서 로드 (없으면 서버에서 로드)
+    function loadAllData(forceReload) {
+      // 강제 리로드가 아닌 경우 캐시 먼저 확인 (화면 초기화 없이 즉시 표시)
+      if (!forceReload) {
+        var cachedData = null;
+        var storageType = sessionStorage.getItem('dataStorageType');
+        if (storageType === 'local') {
+          cachedData = localStorage.getItem('allRowsCache');
+        } else {
+          cachedData = sessionStorage.getItem('allRowsCache');
+        }
+        if (cachedData) {
+          try {
+            var rows = JSON.parse(cachedData);
+            if (rows && rows.length > 0) {
+              allRowsCache = rows;
+              dataLoaded = true;
+              dataIndex = 0;
+              displayCurrentRow();
+              return;
+            }
+          } catch(e) {
+            // 파싱 실패 시 서버에서 다시 로드
+          }
+        }
+      }
+
+      // 서버에서 로드 시에만 화면 초기화
+      document.getElementById('apaDisplay').innerHTML = '';
+      var labels = document.querySelector('.col-labels');
+      if (labels) {
+        var spans = labels.querySelectorAll('span');
+        if (spans[0]) spans[0].textContent = '';
+        if (spans[1]) spans[1].textContent = '';
+        if (spans[2]) spans[2].textContent = '';
+      }
+
+      // 서버에서 로드
+      fetch(GAS_URL + '?action=getAllData')
+        .then(function(response) { return response.json(); })
+        .then(function(result) {
+          if (result.success) {
+            allRowsCache = result.rows;
+            dataLoaded = true;
+            dataIndex = 0;
+            // 캐시 갱신
+            try {
+              sessionStorage.setItem('allRowsCache', JSON.stringify(result.rows));
+              sessionStorage.setItem('dataLoaded', 'true');
+            } catch(e) {
+              try {
+                localStorage.setItem('allRowsCache', JSON.stringify(result.rows));
+                localStorage.setItem('dataLoaded', 'true');
+                sessionStorage.setItem('dataStorageType', 'local');
+              } catch(e2) {}
+            }
+            if (allRowsCache.length > 0) {
+              displayCurrentRow();
+            } else {
+              showAlertModal('시트에 데이터가 없습니다.');
+            }
+          } else {
+            showAlertModal(result.message || '데이터를 불러올 수 없습니다.');
+          }
+        })
+        .catch(function(err) {
+          showAlertModal('서버 연결 오류: ' + err.message);
+        });
+    }
+
+    // ── Navigation (캐시 기반, 즉시 반응) ──
+    function navPrev() {
+      if (!dataLoaded) return;
+      if (dataIndex > 0) {
+        dataIndex--;
+        displayCurrentRow();
+      }
+    }
+    function navNext() {
+      if (!dataLoaded) return;
+      if (dataIndex < allRowsCache.length - 1) {
+        dataIndex++;
+        displayCurrentRow();
+      } else {
+        showAlertModal('마지막 자료입니다.');
+      }
+    }
+
+    // A열 값으로 캐시에서 검색
+    function findByColA(value, silent) {
+      if (!dataLoaded) return;
+      var searchNum = parseInt(String(value), 10);
+      if (isNaN(searchNum)) {
+        if (!silent) showAlertModal('유효한 숫자를 입력해주세요.');
+        updateNavLabel();
+        return;
+      }
+      for (var i = 0; i < allRowsCache.length; i++) {
+        var rowNum = parseInt(String(allRowsCache[i].colA), 10);
+        if (rowNum === searchNum) {
+          dataIndex = i;
+          displayCurrentRow();
+          return;
+        }
+      }
+      if (!silent) showAlertModal('잘못된 번호입니다. ' + padThreeDigits(searchNum) + '번에 해당하는 데이터가 없습니다.');
+      updateNavLabel();
+    }
+
+    // navLabel 숫자 입력 → 세자리 변환 후 해당 자료로 이동
+    document.addEventListener('DOMContentLoaded', function() {
+      var navInput = document.getElementById('navLabel');
+      // 클릭 시 기존 값 지우고 입력 준비
+      navInput.addEventListener('focus', function() {
+        navInput.value = '';
+      });
+
+      // 숫자만 허용
+      navInput.addEventListener('input', function() {
+        navInput.value = navInput.value.replace(/[^0-9]/g, '');
+      });
+
+      // Enter 시 1~2자리도 이동
+      navInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          var val = navInput.value.trim();
+          var num = parseInt(val, 10);
+          if (isNaN(num) || num < 1) {
+            showAlertModal('유효한 숫자를 입력해주세요.');
+            updateNavLabel();
+            return;
+          }
+          navInput.value = padThreeDigits(num);
+          findByColA(num);
+          navInput.blur();
+        }
+      });
+
+      // 포커스 잃으면 현재 값 복원
+      navInput.addEventListener('blur', function() {
+        if (!navInput.value.trim() || isNaN(parseInt(navInput.value, 10))) {
+          updateNavLabel();
+        }
+      });
+
+      // 드롭다운 "분류 취소" 선택 시 값 초기화
+      ['cat1', 'cat2', 'cat3'].forEach(function(id) {
+        document.getElementById(id).addEventListener('change', function() {
+          if (this.value === '__clear__') {
+            this.selectedIndex = 0;
+          }
+        });
+      });
+
+      // 카테고리 텍스트 박스 비워지면 드롭다운 자동 초기화
+      document.getElementById('analysisField').addEventListener('input', function() {
+        if (!this.value.trim()) {
+          document.getElementById('cat1').value = '';
+          document.getElementById('cat2').value = '';
+          document.getElementById('cat3').value = '';
+        }
+      });
+    });
+
+    // ── Actions ──
+    function reloadData() { dataLoaded = false; loadAllData(true); }
+    function openSheet() { window.open('https://docs.google.com/spreadsheets/d/1cjLPZ13HsKBWOrLOrK3znGBHoAYUaO3HlSHmtLpAIPY/edit?gid=839042060#gid=839042060', '_blank'); }
+    function printPage() {
+      var d = allRowsCache[dataIndex];
+      if (d) {
+        // No. 세자리 숫자
+        var noStr = String(d.colA || '');
+        while (noStr.length < 3) noStr = '0' + noStr;
+
+        // 제목줄: {001} 학술지명 - 범주
+        var journal = d.colB || '';
+        var category = d.colG || '';
+        document.getElementById('printTitleLine').textContent = '{' + noStr + '} ' + journal + ' - ' + category;
+
+        // APA (학술지명+권 굵게)
+        document.getElementById('printApa').innerHTML = formatAPA(d.colH || '', d.colB || '');
+
+        // 분석결과
+        document.getElementById('printResult').textContent = d.colJ || '';
+      }
+      window.print();
+    }
+
+    // ── 로그아웃 ──
+    function confirmLogout() {
+      // 모달 초기 상태로 복원
+      document.getElementById('logoutTitle').textContent = '정말 로그아웃 하시겠습니까?';
+      document.getElementById('logoutBtns').style.display = '';
+      document.getElementById('logoutSteps').style.display = 'none';
+      document.getElementById('logoutCountdown').style.display = 'none';
+      resetLogoutSteps();
+      document.getElementById('logoutModal').classList.add('show');
+    }
+    function closeLogoutModal() {
+      document.getElementById('logoutModal').classList.remove('show');
+    }
+
+    function setLogoutStepState(stepNum, state) {
+      var item = document.getElementById('lStep' + stepNum);
+      var icon = document.getElementById('lStep' + stepNum + 'Icon');
+      item.style.color = state === 'done' ? '#2e7d32' : state === 'active' ? '#333' : '#888';
+      item.style.fontWeight = state === 'active' ? '500' : 'normal';
+      if (state === 'active') {
+        icon.innerHTML = '<div class="logout-step-spinner"></div>';
+      } else if (state === 'done') {
+        icon.innerHTML = '<span style="color:#2e7d32;font-weight:900;font-size:15px;">✓</span>';
+      } else {
+        icon.innerHTML = '<span style="color:#ccc;font-size:10px;">●</span>';
+      }
+    }
+
+    function resetLogoutSteps() {
+      for (var i = 1; i <= 4; i++) setLogoutStepState(i, 'wait');
+    }
+
+    function sleepMs(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+    async function performLogout() {
+      // 버튼 숨기고 단계 표시
+      document.getElementById('logoutBtns').style.display = 'none';
+      document.getElementById('logoutTitle').textContent = '로그아웃 처리 중...';
+      document.getElementById('logoutSteps').style.display = '';
+
+      // Step 1: 캐시 삭제
+      setLogoutStepState(1, 'active');
+      await sleepMs(500);
+      try {
+        sessionStorage.removeItem('allRowsCache');
+        sessionStorage.removeItem('dataLoaded');
+        sessionStorage.removeItem('dataStorageType');
+        localStorage.removeItem('allRowsCache');
+        localStorage.removeItem('dataLoaded');
+      } catch(e) {}
+      setLogoutStepState(1, 'done');
+
+      // Step 2: 세션 정보 삭제
+      setLogoutStepState(2, 'active');
+      await sleepMs(500);
+      sessionStorage.removeItem('userEmail');
+      sessionStorage.clear();
+      localStorage.clear();
+      setLogoutStepState(2, 'done');
+
+      // Step 3: 환경 정리
+      setLogoutStepState(3, 'active');
+      await sleepMs(500);
+      allRowsCache = [];
+      dataLoaded = false;
+      dataIndex = 0;
+      setLogoutStepState(3, 'done');
+
+      // Step 4: 완료
+      await sleepMs(300);
+      setLogoutStepState(4, 'done');
+      document.getElementById('logoutTitle').textContent = '로그아웃이 완료되었습니다.';
+
+      // 카운트다운 (3초)
+      var countdownEl = document.getElementById('logoutCountdown');
+      countdownEl.style.display = '';
+      var remaining = 3;
+      countdownEl.textContent = remaining + '초 후 로그인 페이지로 이동합니다.';
+
+      var interval = setInterval(function() {
+        remaining--;
+        if (remaining > 0) {
+          countdownEl.textContent = remaining + '초 후 로그인 페이지로 이동합니다.';
+        } else {
+          clearInterval(interval);
+          countdownEl.textContent = '이동 중...';
+          window.location.href = 'index.html';
+        }
+      }, 1000);
+    }
+
+    function collectFormData() {
+      return {
+        row: currentRow,
+        apa: document.getElementById('apaDisplay').textContent,
+        pdfUrl: document.getElementById('pdfUrlField').value,
+        noEvidence: document.getElementById('chkNoEvidence').checked,
+        mCol: document.getElementById('mColField').value,
+        chk_conventional: document.getElementById('chk1').checked,
+        chk_mercenary: document.getElementById('chk2').checked,
+        chk_functionalist: document.getElementById('chk3').checked,
+        chk_conceptConfusion: document.getElementById('chk4').checked,
+        chk_other: document.getElementById('chk5').checked,
+        analysis: document.getElementById('analysisField').value,
+        cat1: document.getElementById('cat1').value,
+        cat2: document.getElementById('cat2').value,
+        cat3: document.getElementById('cat3').value,
+        sufficient: document.getElementById('chkSufficient').checked,
+        anCol: document.getElementById('anColField').value
+      };
+    }
+
+    // ── 선택된 카테고리 라디오 정보 ──
+    function getSelectedCatInfo() {
+      // 라디오ID → {flagCol(시작열), textKey, cat1Key, cat2Key, cat3Key, checkId, startCol}
+      var map = {
+        chk1: { startCol: 14, flagKey:'colN', textKey:'colO', c1Key:'colP', c2Key:'colQ', c3Key:'colR', checkId:'checkCat1' },
+        chk2: { startCol: 19, flagKey:'colS', textKey:'colT', c1Key:'colU', c2Key:'colV', c3Key:'colW', checkId:'checkCat2' },
+        chk3: { startCol: 24, flagKey:'colX', textKey:'colY', c1Key:'colZ', c2Key:'colAA', c3Key:'colAB', checkId:'checkCat3' },
+        chk4: { startCol: 29, flagKey:'colAC', textKey:'colAD', c1Key:'colAE', c2Key:'colAF', c3Key:'colAG', checkId:'checkCat4' },
+        chk5: { startCol: 34, flagKey:'colAH', textKey:'colAI', c1Key:'colAJ', c2Key:'colAK', c3Key:'colAL', checkId:'checkCat5' }
+      };
+      for (var id in map) {
+        if (document.getElementById(id).checked) return map[id];
+      }
+      return null;
+    }
+
+    // ── 드롭다운에 해당 열의 고유 값 로드 (오름차순) ──
+    function populateCatDropdowns() {
+      var info = getSelectedCatInfo();
+      if (!info) return;
+      populateOneDropdown('cat1', info.c1Key);
+      populateOneDropdown('cat2', info.c2Key);
+      populateOneDropdown('cat3', info.c3Key);
+    }
+
+    function populateOneDropdown(selectId, colKey) {
+      var sel = document.getElementById(selectId);
+      var currentVal = sel.value;
+      var defaultLabel = sel === document.getElementById('cat1') ? '1차 분류' :
+                         sel === document.getElementById('cat2') ? '2차 분류' : '3차 분류';
+      // 해당 열의 모든 값 수집 (중복 제거)
+      var vals = {};
+      for (var i = 0; i < allRowsCache.length; i++) {
+        var v = allRowsCache[i][colKey];
+        if (v && String(v).trim()) vals[String(v).trim()] = true;
+      }
+      var sorted = Object.keys(vals).sort(function(a, b) { return a.localeCompare(b, 'ko'); });
+
+      // 옵션 재구성
+      sel.innerHTML = '';
+      var defOpt = document.createElement('option');
+      defOpt.value = ''; defOpt.textContent = defaultLabel; defOpt.disabled = true; defOpt.selected = true;
+      sel.appendChild(defOpt);
+      var clearOpt = document.createElement('option');
+      clearOpt.value = '__clear__'; clearOpt.textContent = '분류 취소';
+      clearOpt.style.color = '#999';
+      sel.appendChild(clearOpt);
+      for (var j = 0; j < sorted.length; j++) {
+        var opt = document.createElement('option');
+        opt.value = sorted[j]; opt.textContent = sorted[j];
+        sel.appendChild(opt);
+      }
+      // 이전 값 복원
+      if (currentVal) {
+        setDropdownValue(selectId, currentVal);
+      }
+    }
+
+    // ── + 버튼: 분류 추가 팝오버 ──
+    var popoverMap = { cat1: '1', cat2: '2', cat3: '3' };
+
+    function addCatOption(selectId) {
+      // 다른 팝오버 닫기
+      ['cat1','cat2','cat3'].forEach(function(id) {
+        if (id !== selectId) closePopover(id);
+      });
+      var num = popoverMap[selectId];
+      var popover = document.getElementById('catPopover' + num);
+      var input = document.getElementById('catPopInput' + num);
+      input.value = '';
+      popover.classList.add('show');
+      setTimeout(function() { input.focus(); }, 100);
+    }
+
+    function closePopover(selectId) {
+      var num = popoverMap[selectId];
+      document.getElementById('catPopover' + num).classList.remove('show');
+    }
+
+    function confirmPopover(selectId) {
+      var num = popoverMap[selectId];
+      var val = document.getElementById('catPopInput' + num).value.trim();
+      if (!val) { showAlertModal('분류명을 입력해주세요.'); return; }
+      var sel = document.getElementById(selectId);
+      // 중복 체크
+      for (var i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === val) {
+          sel.value = val;
+          closePopover(selectId);
+          return;
+        }
+      }
+      var opt = document.createElement('option');
+      opt.value = val; opt.textContent = val;
+      sel.appendChild(opt);
+      sel.value = val;
+      closePopover(selectId);
+    }
+
+    // ── 페이지 로드 시 전체 데이터 불러오기 ──
+    window.addEventListener('DOMContentLoaded', function() {
+      loadAllData();
+      // 분류 추가 팝오버 Enter 키
+      ['1','2','3'].forEach(function(num) {
+        document.getElementById('catPopInput' + num).addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') { e.preventDefault(); confirmPopover('cat' + num); }
+        });
+      });
+
+      // ── 패널 리사이저 드래그 ──
+      var resizer = document.getElementById('panelResizer');
+      var pdfPanel = document.getElementById('pdfPanel');
+      var container = document.querySelector('.main-container');
+      var dragging = false;
+
+      resizer.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        dragging = true;
+        resizer.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!dragging) return;
+        var rect = container.getBoundingClientRect();
+        var offsetX = e.clientX - rect.left;
+        var pct = (offsetX / rect.width) * 100;
+        if (pct < 60) pct = 60;
+        if (pct > 97) pct = 97;
+        pdfPanel.style.flex = '0 0 ' + pct + '%';
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (!dragging) return;
+        dragging = false;
+        resizer.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      });
+    });
+  </script>
+</body>
+</html>
