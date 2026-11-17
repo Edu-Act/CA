@@ -398,6 +398,7 @@
     }
 
     /* ── Section Colors ── */
+    .section-meaning .expand-header { background: #f5f5f5; }
     .section-noevidence .expand-header { background: #f5f5f5; }
     .section-noevidence.active .expand-header { background: #eee; }
 
@@ -841,6 +842,16 @@
 
     <div class="form-panel">
 
+      <!-- "교육적"의 의미 입력 섹션 -->
+      <div class="expand-section section-meaning">
+        <div class="expand-header">
+          <div class="header-content" style="flex: 1;">
+            <input type="text" id="topNoteField" placeholder="&quot;교육적&quot;의 의미" style="flex: 1; padding: 8.4px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; background: #fff; min-width: 0; line-height: 1.4;" />
+          </div>
+          <button class="btn btn-save-section header-save" onclick="saveTopNote()">Save</button>
+        </div>
+      </div>
+
       <!-- ① 무근거 혹은 불충분 근거 -->
       <div class="expand-section section-noevidence" id="sectionNoEvidence">
         <div class="expand-header">
@@ -932,6 +943,38 @@
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbymfrHvJsVThc7RtoAOjn8ZOLkoJdMb1CVcfUQJm4fvY53a9FxOCBhJek-4Xl6YN0lcDg/exec';
     let currentRow = 2;
+
+    // ── 상단 meaning 저장 (J열, 10번째 열) ──
+    function saveTopNote() {
+      if (!currentRow || currentRow < 2) {
+        showAlertModal('저장할 데이터가 선택되지 않았습니다.');
+        return;
+      }
+      pendingSaveType = 'meaning';
+
+      // 활성 섹션 중앙 근처에 모달 배치 (form-panel 상단)
+      var modal = document.getElementById('confirmSaveModal');
+      var modalBox = modal.querySelector('.modal-box');
+      var formPanel = document.querySelector('.form-panel');
+      if (formPanel) {
+        var rect = formPanel.getBoundingClientRect();
+        var topPos = rect.top + 10;
+        topPos = Math.max(10, Math.min(topPos, window.innerHeight - 160 - 10));
+        modal.style.alignItems = 'flex-start';
+        modalBox.style.marginTop = topPos + 'px';
+        var centerX = rect.left + rect.width / 2;
+        var leftPos = centerX - 170;
+        leftPos = Math.max(10, Math.min(leftPos, window.innerWidth - 340 - 10));
+        modal.style.justifyContent = 'flex-start';
+        modalBox.style.marginLeft = leftPos + 'px';
+      } else {
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modalBox.style.marginTop = '';
+        modalBox.style.marginLeft = '';
+      }
+      modal.classList.add('show');
+    }
 
     // ── APA 서식 적용 (학술지명과 권을 굵게) ──
     function formatAPA(apaText, journalName) {
@@ -1200,7 +1243,7 @@
         // M열 값 로드
         if (allRowsCache[dataIndex]) {
           var d = allRowsCache[dataIndex];
-          document.getElementById('mColField').value = d.colM || '';
+          document.getElementById('mColField').value = d.colN || '';
         }
       } else if (targetSection === 'cat') {
         sectionCat.classList.add('active');
@@ -1221,7 +1264,7 @@
         // AN열 값 로드
         if (allRowsCache[dataIndex]) {
           var d = allRowsCache[dataIndex];
-          document.getElementById('anColField').value = d.colAN || '';
+          document.getElementById('anColField').value = d.colAO || '';
         }
       }
 
@@ -1374,11 +1417,11 @@
       });
     }
 
-    function updateResultLabel(colJ) {
-      if (colJ !== undefined && colJ !== null) {
-        var jStr = String(colJ);
+    function updateResultLabel(colK) {
+      if (colK !== undefined && colK !== null) {
+        var jStr = String(colK);
         if (allRowsCache[dataIndex]) {
-          allRowsCache[dataIndex].colJ = jStr;
+          allRowsCache[dataIndex].colK = jStr;
         }
         var labels = document.querySelector('.col-labels');
         if (labels) {
@@ -1397,21 +1440,21 @@
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'saveNoEvidence', row: currentRow, colL: colLVal, colM: colMVal })
+          body: JSON.stringify({ action: 'saveNoEvidence', row: currentRow, colM: colLVal, colN: colMVal })
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
             if (res.success) {
               // 캐시 업데이트
               if (allRowsCache[dataIndex]) {
-                allRowsCache[dataIndex].colL = colLVal;
-                allRowsCache[dataIndex].colM = colMVal;
+                allRowsCache[dataIndex].colM = colLVal;
+                allRowsCache[dataIndex].colN = colMVal;
               }
               // 체크 표시 업데이트
               setCheckVisible(document.getElementById('checkNoEvidence'), colLVal === '1');
               updateRadioDisabledState();
               // 결과(J열) 갱신
-              updateResultLabel(res.colJ);
+              updateResultLabel(res.colK);
               takeSnapshot('noevidence');
               showConfirmSaveDone('저장되었습니다.');
             } else {
@@ -1432,19 +1475,19 @@
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'saveSufficient', row: currentRow, colAM: colAMVal, colAN: colANVal })
+          body: JSON.stringify({ action: 'saveSufficient', row: currentRow, colAN: colAMVal, colAO: colANVal })
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
             if (res.success) {
               if (allRowsCache[dataIndex]) {
-                allRowsCache[dataIndex].colAM = colAMVal;
-                allRowsCache[dataIndex].colAN = colANVal;
+                allRowsCache[dataIndex].colAN = colAMVal;
+                allRowsCache[dataIndex].colAO = colANVal;
               }
               setCheckVisible(document.getElementById('checkSufficient'), colAMVal === '1');
               updateRadioDisabledState();
               // 결과(J열) 갱신
-              updateResultLabel(res.colJ);
+              updateResultLabel(res.colK);
               takeSnapshot('sufficient');
               showConfirmSaveDone('저장되었습니다.');
             } else {
@@ -1486,8 +1529,30 @@
               // 체크 표시 업데이트
               setCheckVisible(document.getElementById(info.checkId), flagVal === '1');
               updateRadioDisabledState();
-              updateResultLabel(res.colJ);
+              updateResultLabel(res.colK);
               takeSnapshot('cat');
+              showConfirmSaveDone('저장되었습니다.');
+            } else {
+              showConfirmSaveDone('저장 실패: ' + (res.message || '알 수 없는 오류'));
+            }
+          })
+          .catch(function(err) {
+            showConfirmSaveDone('저장 중 오류가 발생했습니다.');
+          });
+        return;
+      }
+
+      if (type === 'meaning') {
+        var meaningVal = document.getElementById('topNoteField').value;
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'saveField', row: currentRow, col: 10, value: meaningVal })
+        })
+          .then(function(r) { return r.json(); })
+          .then(function(res) {
+            if (res.success) {
+              if (allRowsCache[dataIndex]) allRowsCache[dataIndex].colJ = meaningVal;
               showConfirmSaveDone('저장되었습니다.');
             } else {
               showConfirmSaveDone('저장 실패: ' + (res.message || '알 수 없는 오류'));
@@ -1685,7 +1750,8 @@
     }
 
     // ── 데이터 캐시 (전체 한 번에 로드) ──
-    let allRowsCache = []; // [{row, colA, colB, colG, colH, colI, colJ}, ...]
+    var CACHE_VERSION = 'v2_meaning'; // 열 구조 변경 시 버전 갱신
+    let allRowsCache = []; // [{row, colA, colB, colG, colH, colI, colJ, colK, ...}, ...]
     let dataIndex = 0;     // 현재 표시 중인 캐시 인덱스
     let dataLoaded = false;
 
@@ -1740,8 +1806,11 @@
         if (spans[1]) {
           spans[1].textContent = d.colG || '';
         }
-        if (spans[2]) spans[2].textContent = d.colJ ? '{ ' + d.colJ + ' }' : '';
+        if (spans[2]) spans[2].textContent = d.colK ? '{ ' + d.colK + ' }' : '';
       }
+
+      // meaning 필드 로드
+      document.getElementById('topNoteField').value = d.colJ || '';
 
       // 섹션 초기화
       completeDeselect();
@@ -1764,21 +1833,21 @@
       setCheckVisible(document.getElementById('checkCat5'), false);
 
       // L열 값에 따라 체크 표시만 (섹션 확장 없음)
-      if (d.colL && String(d.colL).trim() === '1') {
-        savedSnapshots.noevidence = d.colM || '';
+      if (d.colM && String(d.colM).trim() === '1') {
+        savedSnapshots.noevidence = d.colN || '';
         setCheckVisible(document.getElementById('checkNoEvidence'), true);
       }
 
       // N열(관습적), S열(용병학문적), X열(기능주의적), AC열(개념 혼동), AH열(기타)
-      if (d.colN && String(d.colN).trim() === '1') setCheckVisible(document.getElementById('checkCat1'), true);
-      if (d.colS && String(d.colS).trim() === '1') setCheckVisible(document.getElementById('checkCat2'), true);
-      if (d.colX && String(d.colX).trim() === '1') setCheckVisible(document.getElementById('checkCat3'), true);
-      if (d.colAC && String(d.colAC).trim() === '1') setCheckVisible(document.getElementById('checkCat4'), true);
-      if (d.colAH && String(d.colAH).trim() === '1') setCheckVisible(document.getElementById('checkCat5'), true);
+      if (d.colO && String(d.colO).trim() === '1') setCheckVisible(document.getElementById('checkCat1'), true);
+      if (d.colT && String(d.colT).trim() === '1') setCheckVisible(document.getElementById('checkCat2'), true);
+      if (d.colY && String(d.colY).trim() === '1') setCheckVisible(document.getElementById('checkCat3'), true);
+      if (d.colAD && String(d.colAD).trim() === '1') setCheckVisible(document.getElementById('checkCat4'), true);
+      if (d.colAI && String(d.colAI).trim() === '1') setCheckVisible(document.getElementById('checkCat5'), true);
 
       // AM열 값에 따라 체크 표시만 (섹션 확장 없음)
-      if (d.colAM && String(d.colAM).trim() === '1') {
-        savedSnapshots.sufficient = d.colAN || '';
+      if (d.colAN && String(d.colAN).trim() === '1') {
+        savedSnapshots.sufficient = d.colAO || '';
         setCheckVisible(document.getElementById('checkSufficient'), true);
       }
 
@@ -1804,10 +1873,20 @@
       if (!forceReload) {
         var cachedData = null;
         var storageType = sessionStorage.getItem('dataStorageType');
-        if (storageType === 'local') {
-          cachedData = localStorage.getItem('allRowsCache');
+        var cachedVersion = localStorage.getItem('cacheVersion') || sessionStorage.getItem('cacheVersion') || '';
+        // 캐시 버전이 다르면 이전 캐시 무효화
+        if (cachedVersion !== CACHE_VERSION) {
+          localStorage.removeItem('allRowsCache');
+          sessionStorage.removeItem('allRowsCache');
+          localStorage.setItem('cacheVersion', CACHE_VERSION);
+          sessionStorage.setItem('cacheVersion', CACHE_VERSION);
+          cachedData = null;
         } else {
-          cachedData = sessionStorage.getItem('allRowsCache');
+          if (storageType === 'local') {
+            cachedData = localStorage.getItem('allRowsCache');
+          } else {
+            cachedData = sessionStorage.getItem('allRowsCache');
+          }
         }
         if (cachedData) {
           try {
@@ -1843,14 +1922,16 @@
             allRowsCache = result.rows;
             dataLoaded = true;
             dataIndex = 0;
-            // 캐시 갱신
+            // 캐시 갱신 (버전 포함)
             try {
               sessionStorage.setItem('allRowsCache', JSON.stringify(result.rows));
               sessionStorage.setItem('dataLoaded', 'true');
+              sessionStorage.setItem('cacheVersion', CACHE_VERSION);
             } catch(e) {
               try {
                 localStorage.setItem('allRowsCache', JSON.stringify(result.rows));
                 localStorage.setItem('dataLoaded', 'true');
+                localStorage.setItem('cacheVersion', CACHE_VERSION);
                 sessionStorage.setItem('dataStorageType', 'local');
               } catch(e2) {}
             }
@@ -2035,10 +2116,12 @@
         try {
           sessionStorage.setItem('allRowsCache', JSON.stringify(result.rows));
           sessionStorage.setItem('dataLoaded', 'true');
+          sessionStorage.setItem('cacheVersion', CACHE_VERSION);
         } catch(e) {
           try {
             localStorage.setItem('allRowsCache', JSON.stringify(result.rows));
             localStorage.setItem('dataLoaded', 'true');
+            localStorage.setItem('cacheVersion', CACHE_VERSION);
             sessionStorage.setItem('dataStorageType', 'local');
           } catch(e2) {}
         }
@@ -2078,7 +2161,7 @@
         // 제목줄: {001} 학술지명 - 범주 - 분석결과
         var journal = d.colB || '';
         var category = d.colG || '';
-        var result = d.colJ || '';
+        var result = d.colK || '';
         document.getElementById('printTitleLine').textContent = '{' + noStr + '} ' + journal + ' - ' + category + ' - ' + result;
 
         // APA (학술지명+권 굵게)
@@ -2088,20 +2171,20 @@
         var reasonsHtml = '';
 
         // 무근거 혹은 불충분 근거
-        if (d.colL && String(d.colL).trim() === '1' && d.colM) {
+        if (d.colM && String(d.colM).trim() === '1' && d.colN) {
           reasonsHtml += '<div class="print-reason-block">';
           reasonsHtml += '<div class="print-reason-title">* 무근거 혹은 불충분 근거 판정 사유</div>';
-          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colM) + '</div>';
+          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colN) + '</div>';
           reasonsHtml += '</div>';
         }
 
         // 관습적 ~ 기타 (순서대로)
         var catItems = [
-          { flag: 'colN', text: 'colO', c1: 'colP', c2: 'colQ', c3: 'colR', name: '관습적' },
-          { flag: 'colS', text: 'colT', c1: 'colU', c2: 'colV', c3: 'colW', name: '용병학문적' },
-          { flag: 'colX', text: 'colY', c1: 'colZ', c2: 'colAA', c3: 'colAB', name: '기능주의적' },
-          { flag: 'colAC', text: 'colAD', c1: 'colAE', c2: 'colAF', c3: 'colAG', name: '개념 혼동' },
-          { flag: 'colAH', text: 'colAI', c1: 'colAJ', c2: 'colAK', c3: 'colAL', name: '기타' }
+          { flag: 'colO', text: 'colP', c1: 'colQ', c2: 'colR', c3: 'colS', name: '관습적' },
+          { flag: 'colT', text: 'colU', c1: 'colV', c2: 'colW', c3: 'colX', name: '용병학문적' },
+          { flag: 'colY', text: 'colZ', c1: 'colAA', c2: 'colAB', c3: 'colAC', name: '기능주의적' },
+          { flag: 'colAD', text: 'colAE', c1: 'colAF', c2: 'colAG', c3: 'colAH', name: '개념 혼동' },
+          { flag: 'colAI', text: 'colAJ', c1: 'colAK', c2: 'colAL', c3: 'colAM', name: '기타' }
         ];
         catItems.forEach(function(cat) {
           if (d[cat.flag] && String(d[cat.flag]).trim() === '1' && d[cat.text]) {
@@ -2118,10 +2201,10 @@
         });
 
         // 충분 혹은 양호
-        if (d.colAM && String(d.colAM).trim() === '1' && d.colAN) {
+        if (d.colAN && String(d.colAN).trim() === '1' && d.colAO) {
           reasonsHtml += '<div class="print-reason-block">';
           reasonsHtml += '<div class="print-reason-title">* 충분 혹은 양호 판정 사유</div>';
-          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colAN) + '</div>';
+          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colAO) + '</div>';
           reasonsHtml += '</div>';
         }
 
@@ -2252,11 +2335,11 @@
     function getSelectedCatInfo() {
       // 라디오ID → {flagCol(시작열), textKey, cat1Key, cat2Key, cat3Key, checkId, startCol}
       var map = {
-        chk1: { startCol: 14, flagKey:'colN', textKey:'colO', c1Key:'colP', c2Key:'colQ', c3Key:'colR', checkId:'checkCat1' },
-        chk2: { startCol: 19, flagKey:'colS', textKey:'colT', c1Key:'colU', c2Key:'colV', c3Key:'colW', checkId:'checkCat2' },
-        chk3: { startCol: 24, flagKey:'colX', textKey:'colY', c1Key:'colZ', c2Key:'colAA', c3Key:'colAB', checkId:'checkCat3' },
-        chk4: { startCol: 29, flagKey:'colAC', textKey:'colAD', c1Key:'colAE', c2Key:'colAF', c3Key:'colAG', checkId:'checkCat4' },
-        chk5: { startCol: 34, flagKey:'colAH', textKey:'colAI', c1Key:'colAJ', c2Key:'colAK', c3Key:'colAL', checkId:'checkCat5' }
+        chk1: { startCol: 15, flagKey:'colO', textKey:'colP', c1Key:'colQ', c2Key:'colR', c3Key:'colS', checkId:'checkCat1' },
+        chk2: { startCol: 20, flagKey:'colT', textKey:'colU', c1Key:'colV', c2Key:'colW', c3Key:'colX', checkId:'checkCat2' },
+        chk3: { startCol: 25, flagKey:'colY', textKey:'colZ', c1Key:'colAA', c2Key:'colAB', c3Key:'colAC', checkId:'checkCat3' },
+        chk4: { startCol: 30, flagKey:'colAD', textKey:'colAE', c1Key:'colAF', c2Key:'colAG', c3Key:'colAH', checkId:'checkCat4' },
+        chk5: { startCol: 35, flagKey:'colAI', textKey:'colAJ', c1Key:'colAK', c2Key:'colAL', c3Key:'colAM', checkId:'checkCat5' }
       };
       for (var id in map) {
         if (document.getElementById(id).checked) return map[id];
