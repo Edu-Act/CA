@@ -846,7 +846,7 @@
       <div class="expand-section section-meaning">
         <div class="expand-header">
           <div class="header-content" style="flex: 1;">
-            <input type="text" id="topNoteField" placeholder="&quot;교육적&quot;의 의미" style="flex: 1; padding: 8.4px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; background: #fff; min-width: 0; line-height: 1.4;" />
+            <input type="text" id="topNoteField" placeholder="&quot;교육적&quot;의 의미" style="flex: 1; padding: 8.4px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; font-weight: 700; background: #fff; min-width: 0; line-height: 1.4;" />
           </div>
           <button class="btn btn-save-section header-save" onclick="saveTopNote()">Save</button>
         </div>
@@ -2162,13 +2162,25 @@
         var journal = d.colB || '';
         var category = d.colG || '';
         var result = d.colK || '';
-        document.getElementById('printTitleLine').textContent = '{' + noStr + '} ' + journal + ' - ' + category + ' - ' + result;
+        document.getElementById('printTitleLine').textContent = '{' + noStr + '} ' + category + ' - ' + journal + ' - ' + result;
 
         // APA (학술지명+권 굵게)
         document.getElementById('printApa').innerHTML = formatAPA(d.colH || '', d.colB || '');
 
+        // '교육적'의 의미
+        var meaningVal = d.colJ || '';
+        if (meaningVal.trim()) {
+          document.getElementById('printReasons').innerHTML = '';
+          var meaningHtml = '<div class="print-reason-block">';
+          meaningHtml += '<span style="font-weight:400; font-size:13px; color:#000;">* \'교육적\'의 의미:&nbsp;&nbsp;</span>';
+          meaningHtml += '<span style="font-weight:700; font-size:13px; color:#333;">' + escapeHtml(meaningVal) + '</span>';
+          meaningHtml += '</div>';
+        } else {
+          var meaningHtml = '';
+        }
+
         // 판정 사유
-        var reasonsHtml = '';
+        var reasonsHtml = meaningHtml;
 
         // 무근거 혹은 불충분 근거
         if (d.colM && String(d.colM).trim() === '1' && d.colN) {
