@@ -398,7 +398,7 @@
     }
 
     /* ── Section Colors ── */
-    .section-meaning .expand-header { background: #f5f5f5; }
+    .section-meaning .expand-header { background: transparent; }
     .section-noevidence .expand-header { background: #f5f5f5; }
     .section-noevidence.active .expand-header { background: #eee; }
 
@@ -459,7 +459,7 @@
       background: #fff;
     }
 
-    .textarea-tall { height: 520px; max-height: 520px; }
+    .textarea-tall { height: 484px; max-height: 484px; }
 
     /* ── Category Dropdowns ── */
     .cat-row {
@@ -799,6 +799,7 @@
         <div id="apaDisplay" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 400; font-size: 15px; color: #000; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1; min-width: 0; padding: 7px 0; cursor: default; user-select: text;"></div>
         <input type="text" id="apaUrlField" style="display:none; flex: 1; min-width: 0;" />
         <button class="btn btn-secondary" id="btnModifyApa" style="min-width: 72px; flex-shrink: 0;" onclick="toggleModifyApa()">Modify</button>
+        <button class="btn btn-warning" style="width: 62px; min-width: 62px; flex-shrink: 0;" onclick="openDriveFolder()">Drive</button>
       </div>
       <div class="top-right">
         <span id="userEmail" style="font-size: 15px; color: #888; margin-right: 8px; white-space: nowrap;"></span>
@@ -818,13 +819,14 @@
         <span class="field-label">PDF</span>
         <input type="text" id="pdfUrlField" disabled />
         <button class="btn btn-primary" onclick="loadPdf()">Load</button>
-        <button class="btn btn-warning" style="min-width: 56px;" onclick="printPdf()">Print</button>
         <button class="btn btn-secondary" id="btnModify" style="min-width: 72px;" onclick="toggleModify()">Modify</button>
+        <button class="btn btn-warning" style="width: 62px; min-width: 62px; flex-shrink: 0;" onclick="printPdf()">Print</button>
       </div>
       <div class="top-right" style="justify-content: flex-start; flex: 1; min-width: 0;">
         <div class="col-labels" style="width: 100%;">
           <span class="chip"></span>
-          <span class="chip" id="colGSpan"></span>
+          <span class="chip" id="colGSpan" title="클릭하여 수정" style="cursor:pointer;" onclick="startEditColG()"></span>
+          <input type="text" id="colGInput" class="chip" style="display:none; border:1px solid #5b9bd5; outline:none; font-size:14px; padding:4px 10px; min-width:60px; max-width:16em;" />
           <span class="result-label" style="flex: 0 0 auto; min-width: 0;"></span>
         </div>
       </div>
@@ -846,7 +848,7 @@
       <div class="expand-section section-meaning">
         <div class="expand-header">
           <div class="header-content" style="flex: 1;">
-            <input type="text" id="topNoteField" placeholder="&quot;교육적&quot;의 의미" style="flex: 1; padding: 8.4px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; font-weight: 700; background: #fff; min-width: 0; line-height: 1.4;" />
+            <input type="text" id="topNoteField" placeholder="&quot;교육적&quot;의 의미" style="flex: 1; padding: 8.4px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; font-weight: 700; background: #f0f2f5; min-width: 0; line-height: 1.4;" />
           </div>
           <button class="btn btn-save-section header-save" onclick="saveTopNote()">Save</button>
         </div>
@@ -2150,6 +2152,58 @@
         showAlertModal('서버 연결 오류: ' + err.message);
       }
     }
+    // ── 범주(G열) 인라인 편집 ──
+    var isEditingColG = false;
+    function startEditColG() {
+      if (isEditingColG) return;
+      if (!currentRow || currentRow < 2) return;
+      isEditingColG = true;
+      var span = document.getElementById('colGSpan');
+      var input = document.getElementById('colGInput');
+      input.value = span.textContent || '';
+      span.style.display = 'none';
+      input.style.display = '';
+      input.focus();
+      input.select();
+    }
+    function finishEditColG(save) {
+      if (!isEditingColG) return;
+      var span = document.getElementById('colGSpan');
+      var input = document.getElementById('colGInput');
+      var newVal = input.value.trim();
+      input.style.display = 'none';
+      span.style.display = '';
+      isEditingColG = false;
+      if (save && newVal !== (span.textContent || '')) {
+        span.textContent = newVal;
+        if (allRowsCache[dataIndex]) allRowsCache[dataIndex].colG = newVal;
+        // 캐시 갱신
+        try {
+          sessionStorage.setItem('allRowsCache', JSON.stringify(allRowsCache));
+        } catch(e) {
+          try { localStorage.setItem('allRowsCache', JSON.stringify(allRowsCache)); } catch(e2) {}
+        }
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'saveField', row: currentRow, col: 7, value: newVal })
+        }).then(function(r) { return r.json(); }).then(function(res) {
+          if (!res.success) showAlertModal('범주 저장 실패: ' + (res.message || ''));
+        }).catch(function() {
+          showAlertModal('범주 저장 중 오류가 발생했습니다.');
+        });
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      var input = document.getElementById('colGInput');
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); finishEditColG(true); }
+        if (e.key === 'Escape') { finishEditColG(false); }
+      });
+      input.addEventListener('blur', function() { finishEditColG(true); });
+    });
+
+    function openDriveFolder() { var w=900,h=600; var left=(screen.width-w)/2; var top=(screen.height-h)/2; window.open('https://drive.google.com/drive/folders/1lDlUiQ4TiCB_UJkVyHONjOyKK4LR0DMS', '_blank', 'width='+w+',height='+h+',left='+left+',top='+top+',scrollbars=yes,resizable=yes'); }
     function openSheet() { window.open('https://docs.google.com/spreadsheets/d/1cjLPZ13HsKBWOrLOrK3znGBHoAYUaO3HlSHmtLpAIPY/edit?gid=839042060#gid=839042060', '_blank'); }
     function printPage() {
       var d = allRowsCache[dataIndex];
