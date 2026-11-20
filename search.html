@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search - Data Summary</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ── Header ── */
+    .search-header {
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .search-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .search-row select {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 13px;
+      background: #fafbfc;
+      min-width: 140px;
+      cursor: pointer;
+    }
+    .search-row select:focus { border-color: #5b9bd5; outline: none; }
+
+    .search-row input[type="text"] {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 13px;
+      background: #fafbfc;
+    }
+    .search-row input[type="text"]:focus { border-color: #5b9bd5; outline: none; }
+
+    .btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: #4a7cdf; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #3a65c0; }
+    .btn-secondary { background: #6c757d; color: #fff; }
+    .btn-secondary:hover:not(:disabled) { background: #5a6268; }
+
+    .search-info {
+      font-size: 12px;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-info .result-count {
+      font-weight: 600;
+      color: #4a7cdf;
+    }
+
+    /* ── Loading ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid #ddd;
+      border-top-color: #4a7cdf;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .loading-spinner.show { display: inline-block; }
+
+    /* ── Table ── */
+    .table-container {
+      flex: 1;
+      overflow: auto;
+      padding: 12px 20px 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    thead th {
+      background: #f8f9fa;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #555;
+      text-align: left;
+      border-bottom: 2px solid #e0e0e0;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody td {
+      padding: 9px 12px;
+      font-size: 13px;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+    }
+
+    tbody tr:hover {
+      background: #f0f7ff;
+    }
+
+    tbody tr {
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    tbody tr:active {
+      background: #e0edff;
+    }
+
+    /* Column widths */
+    .col-no { width: 50px; text-align: center; font-weight: 600; }
+    .col-journal { width: 120px; }
+    .col-volume { width: 60px; text-align: center; }
+    .col-author { width: 100px; }
+    .col-year { width: 55px; text-align: center; }
+    .col-article { min-width: 200px; }
+    .col-category { width: 100px; }
+    .col-apa { min-width: 200px; font-size: 12px; color: #555; }
+
+    /* ── Highlight ── */
+    mark {
+      background: #fff3cd;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #aaa;
+      font-size: 15px;
+    }
+    .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+
+  <div class="search-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span class="search-title">Search - Data Summary (raw_data)</span>
+      <button class="btn btn-secondary" onclick="window.close()">Close</button>
+    </div>
+    <div class="search-row">
+      <select id="searchField">
+        <option value="all">전체</option>
+        <option value="no">No.</option>
+        <option value="journal">Journal</option>
+        <option value="volume">Volume</option>
+        <option value="author">Author</option>
+        <option value="year">Year</option>
+        <option value="article_name">Article Name</option>
+        <option value="category">Category</option>
+        <option value="apa">APA</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="검색어를 입력하세요..." />
+      <button class="btn btn-primary" id="btnSearch" onclick="doSearch()">검색</button>
+      <div class="loading-spinner" id="loadingSpinner"></div>
+    </div>
+    <div class="search-info">
+      <span id="searchStatus">데이터를 불러오는 중...</span>
+      <span class="result-count" id="resultCount"></span>
+    </div>
+  </div>
+
+  <div class="table-container" id="tableContainer">
+    <div class="empty-state" id="emptyState">
+      <div class="icon">🔍</div>
+      <div>데이터를 불러오고 있습니다...</div>
+    </div>
+  </div>
+
+  <script>
+    // data_summary 시트의 GAS 웹앱 URL (배포 후 여기에 입력)
+    const SEARCH_GAS_URL = 'https://script.google.com/macros/s/AKfycbw9RNDxLLp4RYsw81EJYHgXKSlcz2gAvH_KJ1j1XnDujCBna3FqYGQk9ed9_8TlPCXl-w/exec';
+
+    let allData = [];
+    let dataReady = false;
+
+    // ── 페이지 로드 시 전체 데이터 불러오기 ──
+    window.addEventListener('DOMContentLoaded', function() {
+      loadData();
+
+      // Enter 키 검색
+      document.getElementById('searchInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          doSearch();
+        }
+      });
+    });
+
+    function loadData() {
+      document.getElementById('loadingSpinner').classList.add('show');
+      document.getElementById('searchStatus').textContent = '데이터를 불러오는 중...';
+
+      fetch(SEARCH_GAS_URL + '?action=getRawData')
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+          document.getElementById('loadingSpinner').classList.remove('show');
+          if (result.success) {
+            allData = result.rows;
+            dataReady = true;
+            document.getElementById('searchStatus').textContent = '총 ' + allData.length + '건의 데이터가 로드되었습니다. 검색어를 입력하세요.';
+            document.getElementById('emptyState').innerHTML = '<div class="icon">🔍</div><div>검색어를 입력하고 검색 버튼을 클릭하세요.</div>';
+          } else {
+            document.getElementById('searchStatus').textContent = '데이터 로드 실패: ' + (result.message || '알 수 없는 오류');
+            document.getElementById('emptyState').innerHTML = '<div class="icon">⚠️</div><div>데이터를 불러올 수 없습니다.</div>';
+          }
+        })
+        .catch(function(err) {
+          document.getElementById('loadingSpinner').classList.remove('show');
+          document.getElementById('searchStatus').textContent = '서버 연결 오류: ' + err.message;
+          document.getElementById('emptyState').innerHTML = '<div class="icon">⚠️</div><div>서버에 연결할 수 없습니다.</div>';
+        });
+    }
+
+    function doSearch() {
+      if (!dataReady) return;
+
+      var keyword = document.getElementById('searchInput').value.trim();
+      if (!keyword) {
+        document.getElementById('resultCount').textContent = '';
+        document.getElementById('searchStatus').textContent = '검색어를 입력하세요.';
+        renderTable([]);
+        return;
+      }
+
+      var field = document.getElementById('searchField').value;
+      var results = [];
+      var kw = keyword.toLowerCase();
+
+      for (var i = 0; i < allData.length; i++) {
+        var row = allData[i];
+        var match = false;
+
+        if (field === 'all') {
+          // 모든 필드에서 검색
+          var fields = ['no', 'journal', 'volume', 'author', 'year', 'article_name', 'category', 'apa'];
+          for (var f = 0; f < fields.length; f++) {
+            var val = String(row[fields[f]] || '').toLowerCase();
+            if (val.indexOf(kw) !== -1) { match = true; break; }
+          }
+        } else {
+          var val = String(row[field] || '').toLowerCase();
+          if (val.indexOf(kw) !== -1) match = true;
+        }
+
+        if (match) results.push(row);
+      }
+
+      document.getElementById('resultCount').textContent = results.length + '건';
+      document.getElementById('searchStatus').textContent = '"' + keyword + '" 검색 결과:';
+      renderTable(results, keyword);
+    }
+
+    function highlightText(text, keyword) {
+      if (!keyword || !text) return escapeHtml(String(text || ''));
+      var escaped = escapeHtml(String(text));
+      var kwEscaped = escapeHtml(keyword);
+      var regex = new RegExp('(' + kwEscaped.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+      return escaped.replace(regex, '<mark>$1</mark>');
+    }
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function renderTable(rows, keyword) {
+      var container = document.getElementById('tableContainer');
+
+      if (rows.length === 0) {
+        if (keyword) {
+          container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div>검색 결과가 없습니다.</div></div>';
+        } else {
+          container.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><div>검색어를 입력하고 검색 버튼을 클릭하세요.</div></div>';
+        }
+        return;
+      }
+
+      var html = '<table><thead><tr>';
+      html += '<th class="col-no">No.</th>';
+      html += '<th class="col-journal">Journal</th>';
+      html += '<th class="col-volume">Vol.</th>';
+      html += '<th class="col-author">Author</th>';
+      html += '<th class="col-year">Year</th>';
+      html += '<th class="col-article">Article Name</th>';
+      html += '<th class="col-category">Category</th>';
+      html += '<th class="col-apa">APA</th>';
+      html += '</tr></thead><tbody>';
+
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        html += '<tr onclick="selectRow(' + JSON.stringify(r.no).replace(/"/g, '&quot;') + ')" title="클릭하여 Analyzing Tool에서 열기">';
+        html += '<td class="col-no">' + highlightText(r.no, keyword) + '</td>';
+        html += '<td class="col-journal">' + highlightText(r.journal, keyword) + '</td>';
+        html += '<td class="col-volume">' + highlightText(r.volume, keyword) + '</td>';
+        html += '<td class="col-author">' + highlightText(r.author, keyword) + '</td>';
+        html += '<td class="col-year">' + highlightText(r.year, keyword) + '</td>';
+        html += '<td class="col-article">' + highlightText(r.article_name, keyword) + '</td>';
+        html += '<td class="col-category">' + highlightText(r.category, keyword) + '</td>';
+        html += '<td class="col-apa">' + highlightText(r.apa, keyword) + '</td>';
+        html += '</tr>';
+      }
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    // ── 행 클릭 시 부모 창의 Analyzing Tool에서 해당 번호로 이동 ──
+    function selectRow(no) {
+      if (window.opener && !window.opener.closed) {
+        try {
+          // 부모 창의 findByColA 함수 호출
+          var num = parseInt(String(no), 10);
+          if (!isNaN(num)) {
+            window.opener.findByColA(num, true);
+            window.opener.focus();
+          }
+        } catch(e) {
+          // cross-origin 등으로 접근 불가시 무시
+        }
+      }
+    }
+  </script>
+</body>
+</html>

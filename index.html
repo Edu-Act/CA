@@ -166,6 +166,9 @@
 </head>
 <body>
   <div class="login-container" id="loginContainer">
+    <div style="text-align: right; margin-bottom: 8px;">
+      <a href="#" onclick="openRelatePopup(); return false;" style="display:inline-block; padding:5px 14px; background:#5b9bd5; color:#fff; border-radius:5px; font-size:12px; font-weight:600; text-decoration:none; transition:background 0.2s; letter-spacing:0.3px;" onmouseover="this.style.background='#4a8bc5'" onmouseout="this.style.background='#5b9bd5'">관련 연구물</a>
+    </div>
     <h1>Concept Analyzer</h1>
     <!-- 브라우저 자동완성 트랩 (숨김 필드) -->
     <input type="text" name="fake_user" style="display:none" aria-hidden="true" />
@@ -210,6 +213,14 @@
   </div>
 
   <script>
+    function openRelatePopup() {
+      var w = Math.round(screen.width * 0.605);
+      var h = Math.round(screen.height * 0.605);
+      var left = Math.round((screen.width - w) / 2);
+      var top = Math.round((screen.height - h) / 2);
+      window.open('relate_article.html', 'relateArticle', 'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes');
+    }
+
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbyp-bsk9zVmknsYf4ZKcHyyW8u8atb1CVLcLzv_MqdxzEY8PY_CDy4jt-cb8SyLiudI/exec';
     const DATA_GAS_URL = 'https://script.google.com/macros/s/AKfycbymfrHvJsVThc7RtoAOjn8ZOLkoJdMb1CVcfUQJm4fvY53a9FxOCBhJek-4Xl6YN0lcDg/exec';
 

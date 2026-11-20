@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관련 연구물</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #fff;
+      color: #333;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .page-header h1 { font-size: 16px; font-weight: 700; color: #333; }
+
+    /* ── Tabs ── */
+    .tab-bar {
+      background: #fff;
+      border-bottom: 2px solid #e0e0e0;
+      display: flex;
+      padding: 0 20px;
+    }
+    .tab-item {
+      padding: 10px 18px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .tab-item:hover { color: #555; }
+    .tab-item.active { color: #4a7cdf; border-bottom-color: #4a7cdf; }
+
+    /* ── Tab Content ── */
+    .tab-content { flex: 1; overflow: auto; display: none; }
+    .tab-content.active { display: flex; flex-direction: column; }
+
+    /* ── Loading overlay ── */
+    .loading-overlay {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 60px 20px; flex: 1;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-spinner-big {
+      width: 36px; height: 36px;
+      border: 3px solid #e0e0e0; border-top-color: #4a7cdf;
+      border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px;
+    }
+    .loading-steps { list-style: none; padding: 0; text-align: left; min-width: 280px; }
+    .loading-steps li {
+      padding: 6px 0; font-size: 13px; color: #aaa;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .loading-steps li.done { color: #28a745; }
+    .loading-steps li.active { color: #4a7cdf; font-weight: 600; }
+    .loading-steps li.pending { color: #ccc; }
+    .loading-steps li .step-icon { width: 18px; text-align: center; flex-shrink: 0; }
+    .loading-steps li.done .step-icon::before { content: '✓'; }
+    .loading-steps li.active .step-icon::before { content: '⟳'; }
+    .loading-steps li.pending .step-icon::before { content: '○'; }
+
+    /* ── 연구물 현황 ── */
+    .status-container { padding: 20px; flex: 1; overflow: auto; }
+    .stat-cards { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stat-card {
+      background: #fff; border-radius: 10px; padding: 16px 20px; min-width: 140px; flex: 1;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06); text-align: center; border: 1px solid #f0f0f0;
+    }
+    .stat-card .stat-number { font-size: 28px; font-weight: 800; color: #4a7cdf; margin-bottom: 4px; }
+    .stat-card .stat-label { font-size: 12px; color: #888; font-weight: 500; }
+    .stat-card.green .stat-number { color: #28a745; }
+    .stat-card.orange .stat-number { color: #e0a800; }
+    .stat-card.red .stat-number { color: #d9534f; }
+    .status-table-wrap {
+      background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      overflow: auto; border: 1px solid #f0f0f0;
+    }
+    .status-table-wrap h3 { padding: 14px 18px 8px; font-size: 16px; font-weight: 700; color: #333; }
+    .status-table { width: 100%; border-collapse: collapse; }
+    .status-table th {
+      background: #f8f9fa; padding: 8px 12px; font-size: 13px; font-weight: 700;
+      color: #555; text-align: left; border-bottom: 2px solid #e0e0e0;
+    }
+    .status-table td { padding: 7px 12px; font-size: 14px; border-bottom: 1px solid #eee; }
+
+    /* ── 교육적 어휘 현황 ── */
+    .vocab-container { padding: 20px; flex: 1; overflow: auto; }
+    .vocab-table-wrap {
+      background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      overflow: auto; border: 1px solid #f0f0f0;
+    }
+    .vocab-table { border-collapse: collapse; width: max-content; min-width: 100%; }
+    .vocab-table th {
+      background: #eef0f3; padding: 8px 10px; font-size: 11px; font-weight: 700;
+      color: #555; text-align: center; border-bottom: 2px solid #e0e0e0;
+      position: sticky; top: 0; z-index: 1; white-space: nowrap;
+    }
+    .vocab-table td {
+      padding: 6px 10px; font-size: 12px; border-bottom: 1px solid #eee;
+      text-align: center; white-space: nowrap; background: #fff;
+    }
+    /* 합계 열(2번째 열) 배경 회색 */
+    .vocab-table td.sum-col { background: #eef0f3; font-weight: 600; }
+    /* 행/열 하이라이트 */
+    .vocab-table td.highlight-row,
+    .vocab-table td.highlight-col { background: #e8ecf1; }
+    .vocab-table td.highlight-row.highlight-col { background: #dce1e8; }
+
+    /* ── APA 목록 ── */
+    .apa-container { padding: 20px; flex: 1; overflow: auto; }
+    .apa-list {
+      background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      padding: 16px 20px; border: 1px solid #f0f0f0;
+    }
+    .apa-item {
+      padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 15px; line-height: 1.8;
+      padding-left: 3.5em; text-indent: -3.5em; text-align: justify;
+    }
+    .apa-item:last-child { border-bottom: none; }
+
+    /* ── 연구물 검색 (analyzing_tool.html 검색 모달 동일) ── */
+    .search-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
+    .search-bar {
+      display: flex; align-items: center; gap: 10px; padding: 10px 18px;
+      border-bottom: 1px solid #e0e0e0; background: #fff;
+    }
+    .search-bar input[type="text"] { flex: 1; border: none; outline: none; font-size: 15px; padding: 4px 0; }
+    .search-table-wrap { flex: 1; overflow: auto; padding: 0 8px 8px 8px; }
+    .search-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .sm-th {
+      padding: 8px 6px; text-align: center; font-size: 12px; color: #555; font-weight: 600;
+      border-bottom: 2px solid #dee2e6; cursor: pointer; user-select: none; white-space: nowrap;
+      background: #f8f9fa; position: sticky; top: 0; z-index: 2;
+    }
+    .sm-th:hover { background: #eef1f5; }
+    .search-table tbody td {
+      padding: 6px 6px; font-size: 12px; border-bottom: 1px solid #eee;
+      vertical-align: top; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .search-table tbody tr:hover { background: #f5f8ff; }
+    mark { background: #fff3cd; padding: 0 2px; border-radius: 2px; }
+
+    /* Header dropdown */
+    .col-dropdown {
+      display: none; position: fixed; z-index: 10001; background: #fff;
+      border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      max-height: 300px; overflow: auto; min-width: 120px;
+    }
+    .col-dropdown div {
+      padding: 6px 14px; font-size: 13px; cursor: pointer;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .col-dropdown div:hover { background: #e8f0fe; }
+
+    .empty-state { text-align: center; padding: 40px 16px; color: #aaa; font-size: 14px; }
+    .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+
+    /* ── APA 모달 ── */
+    .apa-modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.35); z-index: 20000;
+      align-items: center; justify-content: center;
+    }
+    .apa-modal-overlay.show { display: flex; }
+    .apa-modal {
+      background: #fff; border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      max-width: 600px; width: 90%; max-height: 70vh; overflow: auto;
+      padding: 24px 28px; position: relative;
+    }
+    .apa-modal-close {
+      position: absolute; top: 10px; right: 14px; background: none; border: none;
+      font-size: 20px; color: #999; cursor: pointer; padding: 4px;
+    }
+    .apa-modal-close:hover { color: #333; }
+    .apa-modal-label { font-size: 11px; font-weight: 700; color: #4a7cdf; margin-bottom: 10px; letter-spacing: 0.5px; }
+    .apa-modal-text { font-size: 14px; line-height: 1.8; color: #333; padding-left: 3em; text-indent: -3em; text-align: justify; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header"><h1>관련 연구물</h1></div>
+
+  <div class="tab-bar">
+    <div class="tab-item active" data-tab="status" onclick="switchTab('status')">연구물 현황</div>
+    <div class="tab-item" data-tab="vocab" onclick="switchTab('vocab')">교육적 어휘 현황</div>
+    <div class="tab-item" data-tab="apa" onclick="switchTab('apa')" id="tabApaItem">APA 목록</div>
+    <div class="tab-item" data-tab="search" onclick="switchTab('search')">연구물 검색</div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner-big"></div>
+    <ul class="loading-steps" id="loadingSteps">
+      <li class="active" id="step1"><span class="step-icon"></span> 서버에 연결하는 중...</li>
+      <li class="pending" id="step2"><span class="step-icon"></span> 연구물 데이터 불러오는 중...</li>
+      <li class="pending" id="step3"><span class="step-icon"></span> 교육적 어휘 데이터 불러오는 중...</li>
+      <li class="pending" id="step4"><span class="step-icon"></span> 연구물 현황 생성 중...</li>
+      <li class="pending" id="step5"><span class="step-icon"></span> APA 목록 정렬 중...</li>
+      <li class="pending" id="step6"><span class="step-icon"></span> 검색 인덱스 구성 중...</li>
+      <li class="pending" id="step7"><span class="step-icon"></span> 완료</li>
+    </ul>
+  </div>
+
+  <!-- Tab 1: 연구물 현황 -->
+  <div class="tab-content" id="tabStatus" style="display:none;">
+    <div class="status-container">
+      <div class="stat-cards">
+        <div class="stat-card"><div class="stat-number" id="statTotal">-</div><div class="stat-label">전체 연구물</div></div>
+        <div class="stat-card green"><div class="stat-number" id="statJournals">-</div><div class="stat-label">학술지 수</div></div>
+        <div class="stat-card orange"><div class="stat-number" id="statAuthors">-</div><div class="stat-label">저자 수</div></div>
+        <div class="stat-card red"><div class="stat-number" id="statYearRange">-</div><div class="stat-label">연도 범위</div></div>
+      </div>
+      <div class="status-table-wrap">
+        <h3>학술지별 현황</h3>
+        <table class="status-table">
+          <thead><tr><th>학술지명</th><th style="text-align:center;">연구물 수</th><th style="text-align:center;">비율</th></tr></thead>
+          <tbody id="journalStatsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: 교육적 어휘 현황 -->
+  <div class="tab-content" id="tabVocab" style="display:none;">
+    <div class="vocab-container">
+      <div class="vocab-table-wrap" id="vocabTableWrap">
+        <div class="empty-state"><div class="icon">📖</div><div>데이터를 불러오는 중...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: APA 목록 -->
+  <div class="tab-content" id="tabApa" style="display:none;">
+    <div class="apa-container">
+      <div class="apa-list" id="apaListContainer">
+        <div class="empty-state"><div class="icon">📚</div><div>데이터를 불러오는 중...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 4: 연구물 검색 (의미/결과 제외, 논문명 확장) -->
+  <div class="tab-content" id="tabSearch" style="display:none;">
+    <div class="search-container">
+      <div class="search-bar">
+        <i class="ti ti-search" style="font-size:18px; color:#666;"></i>
+        <input type="text" id="searchInput" placeholder="검색어 입력..." oninput="renderSearchResults(this.value)" />
+      </div>
+      <div class="search-table-wrap" id="searchTableWrap">
+        <table class="search-table" id="searchTable">
+          <thead>
+            <tr style="position:sticky; top:0; background:#f8f9fa; z-index:2;">
+              <th class="sm-th" style="width:46px;" data-col="no">No. <i class="ti ti-chevron-down" style="font-size:11px; opacity:0.5;"></i></th>
+              <th class="sm-th" style="width:120px;" data-col="journal">학술지 <i class="ti ti-chevron-down" style="font-size:11px; opacity:0.5;"></i></th>
+              <th class="sm-th" style="width:120px;" data-col="author">저자 <i class="ti ti-chevron-down" style="font-size:11px; opacity:0.5;"></i></th>
+              <th class="sm-th" style="width:50px;" data-col="year">연도 <i class="ti ti-chevron-down" style="font-size:11px; opacity:0.5;"></i></th>
+              <th class="sm-th" style="width:151px;" data-col="category">분류 <i class="ti ti-chevron-down" style="font-size:11px; opacity:0.5;"></i></th>
+              <th class="sm-th" data-col="article_name">논문명 <i class="ti ti-chevron-down" style="font-size:11px; opacity:0.5;"></i></th>
+            </tr>
+          </thead>
+          <tbody id="searchBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-dropdown" id="colDropdown"></div>
+
+  <!-- APA 모달 -->
+  <div class="apa-modal-overlay" id="apaModalOverlay" onclick="closeApaModal(event)">
+    <div class="apa-modal" onclick="event.stopPropagation()">
+      <button class="apa-modal-close" onclick="closeApaModal()">&times;</button>
+      <div class="apa-modal-label">APA Citation</div>
+      <div class="apa-modal-text" id="apaModalText"></div>
+    </div>
+  </div>
+
+  <script>
+    var SEARCH_GAS_URL = 'https://script.google.com/macros/s/AKfycbw9RNDxLLp4RYsw81EJYHgXKSlcz2gAvH_KJ1j1XnDujCBna3FqYGQk9ed9_8TlPCXl-w/exec';
+
+    var allData = [];
+    var vocabData = [];
+    var vocabDebugMsg = '';
+    var smFilteredCache = [];
+    var smActiveFilter = {};
+
+    // ── Loading steps ──
+    function setStep(n, s) { var el = document.getElementById('step'+n); if(el) el.className = s; }
+    function advanceStep(n) { setStep(n,'done'); if(n<7) setStep(n+1,'active'); }
+    function hideLoading() {
+      document.getElementById('loadingOverlay').style.display = 'none';
+      document.getElementById('tabStatus').style.display = '';
+      document.getElementById('tabStatus').classList.add('active');
+    }
+
+    // ── Tab switching ──
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active');});
+      document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active');c.style.display='none';});
+      document.querySelector('.tab-item[data-tab="'+tabName+'"]').classList.add('active');
+      var tabId = 'tab'+tabName.charAt(0).toUpperCase()+tabName.slice(1);
+      var el = document.getElementById(tabId);
+      el.style.display = '';
+      el.classList.add('active');
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      loadAllDataSequence();
+      document.getElementById('searchInput').addEventListener('keydown', function(e) {
+        if(e.key==='Enter'){e.preventDefault(); renderSearchResults(this.value);}
+      });
+    });
+
+    function loadAllDataSequence() {
+      advanceStep(1);
+      setStep(2,'active');
+
+      fetch(SEARCH_GAS_URL + '?action=getRawData')
+        .then(function(r){return r.json();})
+        .then(function(result) {
+          advanceStep(2);
+          if(result.success && result.rows) allData = result.rows;
+
+          setStep(3,'active');
+          return fetch(SEARCH_GAS_URL + '?action=getFilterData');
+        })
+        .then(function(r){return r.json();})
+        .then(function(result) {
+          advanceStep(3);
+          console.log('[getFilterData] response:', JSON.stringify(result).substring(0,500));
+          if(result.success && result.rows && result.rows.length > 0) {
+            vocabData = result.rows;
+            vocabDebugMsg = 'rows: ' + result.rows.length + ', first row: ' + JSON.stringify(result.rows[0]).substring(0,150);
+          } else {
+            vocabDebugMsg = 'GAS 응답: ' + JSON.stringify(result).substring(0,300);
+          }
+
+          setStep(4,'active');
+          buildStatusTab();
+          advanceStep(4);
+
+          setStep(5,'active');
+          buildApaTab();
+          advanceStep(5);
+
+          setStep(6,'active');
+          buildVocabTab();
+          smFilteredCache = allData.slice();
+          renderSearchResults('');
+          advanceStep(6);
+
+          setStep(7,'done');
+          setTimeout(hideLoading, 400);
+        })
+        .catch(function(err) {
+          var steps = document.querySelectorAll('.loading-steps li');
+          for(var i=0;i<steps.length;i++){
+            if(steps[i].classList.contains('active')){
+              steps[i].innerHTML='<span class="step-icon">✗</span> 오류: '+err.message;
+              steps[i].style.color='#d9534f';
+              break;
+            }
+          }
+        });
+    }
+
+    // ── Tab 1: 연구물 현황 ──
+    function buildStatusTab() {
+      document.getElementById('statTotal').textContent = allData.length;
+      var journals={}, authors={}, years=[];
+      for(var i=0;i<allData.length;i++){
+        var row=allData[i];
+        var j=String(row.journal||'').trim();
+        if(j) journals[j]=(journals[j]||0)+1;
+        var a=String(row.author||'').trim();
+        if(a){var parts=a.split(/[,&]|(?:\band\b)/i);for(var p=0;p<parts.length;p++){var part=parts[p].trim();if(part)authors[part]=true;}}
+        var y=parseInt(String(row.year||''),10);
+        if(!isNaN(y)) years.push(y);
+      }
+      document.getElementById('statJournals').textContent = Object.keys(journals).length;
+      document.getElementById('statAuthors').textContent = Object.keys(authors).length;
+      if(years.length>0){
+        document.getElementById('statYearRange').textContent = Math.min.apply(null,years)+' - '+Math.max.apply(null,years);
+      }
+      var sorted=Object.keys(journals).sort(function(a,b){return journals[b]-journals[a];});
+      var tbody=document.getElementById('journalStatsBody');
+      tbody.innerHTML='';
+      for(var s=0;s<sorted.length;s++){
+        var name=sorted[s],count=journals[name],pct=((count/allData.length)*100).toFixed(1);
+        var tr=document.createElement('tr');
+        tr.innerHTML='<td>'+escapeHtml(name)+'</td><td style="text-align:center;">'+count+'</td><td style="text-align:center;">'+pct+'%</td>';
+        tbody.appendChild(tr);
+      }
+    }
+
+    // ── Tab 2: 교육적 어휘 현황 ──
+    function buildVocabTab() {
+      console.log('[vocabTab] vocabData length:', vocabData ? vocabData.length : 'null');
+      if(vocabData && vocabData.length>0) console.log('[vocabTab] first row sample:', JSON.stringify(vocabData[0]).substring(0,200));
+
+      if(!vocabData || vocabData.length===0){
+        document.getElementById('vocabTableWrap').innerHTML='<div class="empty-state"><div class="icon">📭</div><div>교육적 어휘 데이터가 없습니다.<br><small style="color:#bbb; word-break:break-all;">'+escapeHtml(vocabDebugMsg)+'</small></div></div>';
+        return;
+      }
+
+      // vocabData is array of arrays. First row = header row (A2 from sheet: 어휘, 합계, 교육학연구...)
+      var headers = vocabData[0];
+      var dataRows = vocabData.slice(1);
+
+      // Find columns with non-empty headers
+      var validCols = [];
+      for(var h=0;h<headers.length;h++){
+        var hv = String(headers[h]||'').trim();
+        // Skip empty headers AND cells that are just whitespace or numbers only from row 1
+        if(hv && hv.length > 0) validCols.push(h);
+      }
+
+      console.log('[vocabTab] headers found:', validCols.length, 'dataRows:', dataRows.length);
+
+      if(validCols.length===0){
+        document.getElementById('vocabTableWrap').innerHTML='<div class="empty-state"><div class="icon">📭</div><div>헤더 데이터가 없습니다.<br><small style="color:#bbb;">첫 번째 행: '+escapeHtml(JSON.stringify(headers).substring(0,120))+'</small></div></div>';
+        return;
+      }
+
+      var html='<table class="vocab-table"><thead><tr>';
+      for(var c=0;c<validCols.length;c++){
+        var hVal = String(headers[validCols[c]]||'').trim();
+        var style = c===0 ? ' style="text-align:left;"' : '';
+        html+='<th'+style+'>'+escapeHtml(hVal)+'</th>';
+      }
+      html+='</tr></thead><tbody>';
+
+      var rowCount=0;
+      for(var i=0;i<dataRows.length;i++){
+        var row=dataRows[i];
+        // Skip entirely empty rows
+        var hasData=false;
+        for(var c=0;c<validCols.length;c++){
+          var idx=validCols[c];
+          if(idx<row.length && String(row[idx]||'').trim()){hasData=true;break;}
+        }
+        if(!hasData) continue;
+
+        html+='<tr>';
+        for(var c=0;c<validCols.length;c++){
+          var idx=validCols[c];
+          var cellVal=(idx<row.length)?String(row[idx]||'').trim():'';
+          var cls = c===1 ? ' class="sum-col"' : '';
+          var style = c===0 ? ' style="text-align:left; font-weight:600; background:#eef0f3;"' : '';
+          html+='<td data-col="'+c+'"'+cls+style+'>'+escapeHtml(cellVal)+'</td>';
+        }
+        html+='</tr>';
+        rowCount++;
+      }
+
+      html+='</tbody></table>';
+      document.getElementById('vocabTableWrap').innerHTML=html;
+
+      // 행/열 하이라이트
+      var vtable = document.querySelector('.vocab-table');
+      if(vtable){
+        vtable.addEventListener('mouseover', function(e){
+          var td = e.target.closest('td');
+          if(!td) return;
+          var colIdx = td.getAttribute('data-col');
+          var row = td.parentElement;
+          // 행 하이라이트
+          var cells = row.querySelectorAll('td');
+          for(var i=0;i<cells.length;i++) cells[i].classList.add('highlight-row');
+          // 열 하이라이트
+          if(colIdx!==null){
+            var allTds = vtable.querySelectorAll('td[data-col="'+colIdx+'"]');
+            for(var i=0;i<allTds.length;i++) allTds[i].classList.add('highlight-col');
+          }
+        });
+        vtable.addEventListener('mouseout', function(e){
+          var td = e.target.closest('td');
+          if(!td) return;
+          var allTds = vtable.querySelectorAll('td');
+          for(var i=0;i<allTds.length;i++){
+            allTds[i].classList.remove('highlight-row');
+            allTds[i].classList.remove('highlight-col');
+          }
+        });
+      }
+    }
+
+    // ── Tab 3: APA 목록 ──
+    function buildApaTab() {
+      var apaItems=[];
+      for(var i=0;i<allData.length;i++){
+        var apa=String(allData[i].apa||'').trim();
+        if(apa) apaItems.push({no:allData[i].no, apa:apa, journal:allData[i].journal||''});
+      }
+      apaItems.sort(function(a,b){return a.apa.localeCompare(b.apa,'ko');});
+      document.getElementById('tabApaItem').textContent='APA 목록('+apaItems.length+'건)';
+      var container=document.getElementById('apaListContainer');
+      if(apaItems.length===0){container.innerHTML='<div class="empty-state"><div class="icon">📭</div><div>APA 데이터가 없습니다.</div></div>';return;}
+      var html='';
+      for(var i=0;i<apaItems.length;i++){
+        html+='<div class="apa-item">'+formatAPA(apaItems[i].apa,apaItems[i].journal)+'</div>';
+      }
+      container.innerHTML=html;
+    }
+
+    function formatAPA(apaText,journalName){
+      if(!apaText)return '';
+      var safe=apaText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      if(journalName&&journalName.trim()){
+        var jName=journalName.trim();
+        var jSafe=jName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        var idx=safe.indexOf(jSafe);
+        if(idx!==-1){
+          var after=safe.substring(idx+jSafe.length);
+          var vm=after.match(/^(,\s*)(\d+)/);
+          if(vm){return safe.substring(0,idx)+'<b>'+jSafe+vm[1]+vm[2]+'</b>'+after.substring(vm[0].length);}
+          else{return safe.substring(0,idx)+'<b>'+jSafe+'</b>'+after;}
+        }
+      }
+      return safe;
+    }
+
+    // ── Tab 4: 연구물 검색 ──
+    // 의미/결과 제외, 논문명 확장. No~분류 가운데 정렬, 논문명만 왼쪽 정렬
+    var searchColDefs = [
+      {key:'no',    align:'center'},
+      {key:'journal', align:'center'},
+      {key:'author',  align:'center'},
+      {key:'year',    align:'center'},
+      {key:'category',align:'center'},
+      {key:'article_name', align:'left'}
+    ];
+
+    function getVal(row,key){ return row[key]||''; }
+
+    function renderSearchResults(keyword){
+      var kw=(keyword||'').trim().toLowerCase();
+      var tbody=document.getElementById('searchBody');
+      tbody.innerHTML='';
+
+      var filtered=[];
+      for(var i=0;i<allData.length;i++){
+        var row=allData[i];
+        // Column filter
+        var pass=true;
+        for(var fk in smActiveFilter){
+          if(smActiveFilter.hasOwnProperty(fk)&&smActiveFilter[fk]){
+            if(String(getVal(row,fk)).toLowerCase().indexOf(smActiveFilter[fk].toLowerCase())===-1){pass=false;break;}
+          }
+        }
+        if(!pass)continue;
+
+        if(!kw){filtered.push(row);}
+        else{
+          var match=false;
+          for(var c=0;c<searchColDefs.length;c++){
+            if(String(getVal(row,searchColDefs[c].key)).toLowerCase().indexOf(kw)!==-1){match=true;break;}
+          }
+          if(match) filtered.push(row);
+        }
+      }
+
+      smFilteredCache=filtered;
+
+      for(var i=0;i<filtered.length;i++){
+        var r=filtered[i];
+        var tr=document.createElement('tr');
+        for(var c=0;c<searchColDefs.length;c++){
+          var col=searchColDefs[c];
+          var td=document.createElement('td');
+          var cellVal=String(getVal(r,col.key));
+          td.style.textAlign=col.align;
+          if(col.key==='article_name'){
+            td.style.whiteSpace='nowrap';
+            td.style.overflow='hidden';
+            td.style.textOverflow='ellipsis';
+            td.style.maxWidth='0';
+            td.style.cursor='pointer';
+            td.title=cellVal;
+            (function(row){
+              td.addEventListener('click',function(){ showApaModal(row); });
+            })(r);
+          }
+          if(kw){td.innerHTML=highlightText(cellVal,keyword);}
+          else{td.textContent=cellVal;}
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+    }
+
+    function highlightText(text,keyword){
+      if(!keyword||!text)return escapeHtml(text);
+      var escaped=escapeHtml(text);
+      var kwE=escapeHtml(keyword.trim());
+      var regex=new RegExp('('+kwE.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+      return escaped.replace(regex,'<mark>$1</mark>');
+    }
+
+    function escapeHtml(text){
+      if(text===null||text===undefined)return '';
+      var div=document.createElement('div');
+      div.textContent=String(text);
+      return div.innerHTML;
+    }
+
+    // ── APA 모달 ──
+    function showApaModal(row) {
+      var apaText = String(row.apa||'').trim();
+      var journal = String(row.journal||'').trim();
+      var el = document.getElementById('apaModalText');
+      if(apaText) {
+        el.innerHTML = formatAPA(apaText, journal);
+      } else {
+        el.innerHTML = '<span style="color:#aaa;">APA 데이터가 없습니다.</span>';
+      }
+      document.getElementById('apaModalOverlay').classList.add('show');
+    }
+    function closeApaModal(e) {
+      if(e && e.target !== document.getElementById('apaModalOverlay')) return;
+      document.getElementById('apaModalOverlay').classList.remove('show');
+    }
+
+    // ── Column header dropdown ──
+    document.addEventListener('click',function(e){
+      var th=e.target.closest('th[data-col]');
+      if(!th){document.getElementById('colDropdown').style.display='none';return;}
+      var col=th.getAttribute('data-col');
+      if(!col)return;
+      var dd=document.getElementById('colDropdown');
+      dd.innerHTML='';
+      var src=smFilteredCache.length>0?smFilteredCache:allData;
+      var vals={};
+      for(var i=0;i<src.length;i++){
+        var v=String(getVal(src[i],col)).trim();
+        if(!v)continue;
+        if(col==='author'){var parts=v.split(/[,&]|(?:\band\b)/i);for(var p=0;p<parts.length;p++){var part=parts[p].trim();if(part)vals[part]=true;}}
+        else if(col==='category'){var parts=v.split('+');for(var p=0;p<parts.length;p++){var part=parts[p].trim();if(part)vals[part]=true;}}
+        else{vals[v]=true;}
+      }
+      var sorted=Object.keys(vals).sort(function(a,b){
+        var na=parseFloat(a),nb=parseFloat(b);
+        if(!isNaN(na)&&!isNaN(nb))return na-nb;
+        return a.localeCompare(b,'ko');
+      });
+      if(sorted.length===0){dd.style.display='none';return;}
+
+      var allDiv=document.createElement('div');
+      allDiv.textContent='전체 보기';
+      allDiv.style.fontWeight='600';
+      allDiv.style.color='#4a7cdf';
+      allDiv.onclick=function(){smActiveFilter={};document.getElementById('searchInput').value='';renderSearchResults('');dd.style.display='none';};
+      dd.appendChild(allDiv);
+
+      for(var s=0;s<Math.min(sorted.length,300);s++){
+        (function(val,colName){
+          var div=document.createElement('div');
+          div.textContent=val;
+          div.onclick=function(){smActiveFilter={};smActiveFilter[colName]=val;document.getElementById('searchInput').value='';renderSearchResults('');dd.style.display='none';};
+          dd.appendChild(div);
+        })(sorted[s],col);
+      }
+
+      var rect=th.getBoundingClientRect();
+      dd.style.left=rect.left+'px';
+      dd.style.top=(rect.bottom+2)+'px';
+      dd.style.maxWidth='280px';
+      dd.style.display='block';
+    });
+  </script>
+</body>
+</html>
