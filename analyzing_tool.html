@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Concept Analyzer - Analyzing Tool</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -230,7 +231,7 @@
     @container formPanel (max-width: 320px) {
       .col-labels { font-size: 11px; gap: 6px; }
       .col-labels .chip { font-size: 14px; }
-      .col-labels .result-label { font-size: 12px; }
+      .col-labels .result-label { font-size: 11px; padding: 2px 10px; }
       .expand-header { padding: 6px 8px; font-size: 12px; gap: 6px; }
       .expand-header input[type="radio"] { width: 14px; height: 14px; }
       .expand-header .header-content { gap: 6px; font-size: 12px; }
@@ -247,7 +248,7 @@
     @container formPanel (max-width: 200px) {
       .col-labels { font-size: 9px; gap: 4px; }
       .col-labels .chip { font-size: 14px; }
-      .col-labels .result-label { font-size: 10px; }
+      .col-labels .result-label { font-size: 9px; padding: 2px 8px; }
       .expand-header { padding: 4px 6px; font-size: 10px; gap: 4px; }
       .expand-header input[type="radio"] { width: 12px; height: 12px; }
       .expand-header .header-content { gap: 4px; font-size: 10px; }
@@ -296,6 +297,13 @@
       max-width: 16em;
     }
 
+    .col-labels .chip .ti {
+      font-size: 15px;
+      vertical-align: middle;
+      margin-left: 3px;
+      opacity: 0.55;
+    }
+
     .col-labels .chip:empty {
       background: transparent;
       padding: 4px 0;
@@ -305,16 +313,25 @@
     .col-labels .result-label {
       margin-left: auto;
       text-align: right;
-      padding: 4px 0;
+      padding: 3px 12px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       font-family: 'Georgia', 'Times New Roman', serif;
-      font-weight: 800;
-      color: #444;
-      font-size: 16px;
-      line-height: 24px;
-      min-height: 24px;
+      font-weight: 700;
+      color: #555;
+      font-size: 14px;
+      line-height: 22px;
+      min-height: 22px;
+      border: 1.5px solid #aab;
+      border-radius: 20px;
+      background: transparent;
+      flex: none;
+    }
+
+    .col-labels .result-label:empty {
+      border: none;
+      padding: 3px 0;
     }
 
     /* ── Expandable Section ── */
@@ -873,10 +890,10 @@
         <div class="expand-header">
           <div class="header-content">
             <div class="header-check-items">
-              <label><input type="radio" name="sectionRadio" id="chk1" onclick="onRadioClick(event, 'cat')" /> 관습적<span class="section-check" id="checkCat1">✓</span></label>
-              <label><input type="radio" name="sectionRadio" id="chk2" onclick="onRadioClick(event, 'cat')" /> 용병학문적<span class="section-check" id="checkCat2">✓</span></label>
-              <label><input type="radio" name="sectionRadio" id="chk3" onclick="onRadioClick(event, 'cat')" /> 기능주의적<span class="section-check" id="checkCat3">✓</span></label>
-              <label><input type="radio" name="sectionRadio" id="chk4" onclick="onRadioClick(event, 'cat')" /> 개념 혼동<span class="section-check" id="checkCat4">✓</span></label>
+              <label><input type="radio" name="sectionRadio" id="chk1" onclick="onRadioClick(event, 'cat')" /> 관습 추종<span class="section-check" id="checkCat1">✓</span></label>
+              <label><input type="radio" name="sectionRadio" id="chk2" onclick="onRadioClick(event, 'cat')" /> 외래학문<span class="section-check" id="checkCat2">✓</span></label>
+              <label><input type="radio" name="sectionRadio" id="chk3" onclick="onRadioClick(event, 'cat')" /> 결과위주<span class="section-check" id="checkCat3">✓</span></label>
+              <label><input type="radio" name="sectionRadio" id="chk4" onclick="onRadioClick(event, 'cat')" /> '교육학'과 혼동<span class="section-check" id="checkCat4">✓</span></label>
               <label><input type="radio" name="sectionRadio" id="chk5" onclick="onRadioClick(event, 'cat')" /> 기타<span class="section-check" id="checkCat5">✓</span></label>
             </div>
           </div>
@@ -1428,34 +1445,71 @@
         var labels = document.querySelector('.col-labels');
         if (labels) {
           var spans = labels.querySelectorAll('span');
-          if (spans[2]) spans[2].textContent = jStr ? '{ ' + jStr + ' }' : '';
+          if (spans[2]) spans[2].textContent = jStr || '';
         }
+      }
+      updateResultChipColor();
+    }
+
+    // ── Result 칩 색상을 체크된 섹션에 맞춰 변경 ──
+    function updateResultChipColor() {
+      var labels = document.querySelector('.col-labels');
+      if (!labels) return;
+      var chip = labels.querySelectorAll('span')[2];
+      if (!chip) return;
+
+      var noEvChecked = document.getElementById('checkNoEvidence').classList.contains('visible');
+      var sufChecked = document.getElementById('checkSufficient').classList.contains('visible');
+      var catChecked = ['checkCat1','checkCat2','checkCat3','checkCat4','checkCat5'].some(function(id) {
+        return document.getElementById(id).classList.contains('visible');
+      });
+
+      // 초기화
+      chip.style.background = 'transparent';
+      chip.style.borderColor = '#aab';
+      chip.style.color = '#555';
+
+      if (noEvChecked) {
+        chip.style.background = '#eee';
+        chip.style.borderColor = '#bbb';
+        chip.style.color = '#444';
+      } else if (catChecked) {
+        chip.style.background = '#fce4ec';
+        chip.style.borderColor = '#e8a0b0';
+        chip.style.color = '#7b2a3e';
+      } else if (sufChecked) {
+        chip.style.background = '#bbdefb';
+        chip.style.borderColor = '#7eaddc';
+        chip.style.color = '#1a4a72';
       }
     }
 
     function doSave(type) {
       if (type === 'noevidence') {
         var mText = document.getElementById('mColField').value.trim();
-        var colLVal = mText ? '1' : '0';
-        var colMVal = mText || '';
+        var colMFlag = mText ? '1' : '0';
+        var colNText = mText || '';
+        var payload = { action: 'saveNoEvidence', row: currentRow, colL: colMFlag, colM: colNText };
+        console.log('[Save noevidence] payload:', JSON.stringify(payload));
 
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'saveNoEvidence', row: currentRow, colM: colLVal, colN: colMVal })
+          body: JSON.stringify(payload)
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
+            console.log('[Save noevidence] response:', JSON.stringify(res));
             if (res.success) {
               // 캐시 업데이트
               if (allRowsCache[dataIndex]) {
-                allRowsCache[dataIndex].colM = colLVal;
-                allRowsCache[dataIndex].colN = colMVal;
+                allRowsCache[dataIndex].colM = colMFlag;
+                allRowsCache[dataIndex].colN = colNText;
               }
               // 체크 표시 업데이트
-              setCheckVisible(document.getElementById('checkNoEvidence'), colLVal === '1');
+              setCheckVisible(document.getElementById('checkNoEvidence'), colMFlag === '1');
               updateRadioDisabledState();
-              // 결과(J열) 갱신
+              // 결과(K열) 갱신
               updateResultLabel(res.colK);
               takeSnapshot('noevidence');
               showConfirmSaveDone('저장되었습니다.');
@@ -1464,31 +1518,35 @@
             }
           })
           .catch(function(err) {
-            showConfirmSaveDone('저장 중 오류가 발생했습니다.');
+            console.error('[Save noevidence] error:', err);
+            showConfirmSaveDone('저장 중 오류가 발생했습니다: ' + err.message);
           });
         return;
       }
 
       if (type === 'sufficient') {
         var anText = document.getElementById('anColField').value.trim();
-        var colAMVal = anText ? '1' : '0';
-        var colANVal = anText || '';
+        var colANFlag = anText ? '1' : '0';
+        var colAOText = anText || '';
+        var payload = { action: 'saveSufficient', row: currentRow, colAM: colANFlag, colAN: colAOText };
+        console.log('[Save sufficient] payload:', JSON.stringify(payload));
 
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'saveSufficient', row: currentRow, colAN: colAMVal, colAO: colANVal })
+          body: JSON.stringify(payload)
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
+            console.log('[Save sufficient] response:', JSON.stringify(res));
             if (res.success) {
               if (allRowsCache[dataIndex]) {
-                allRowsCache[dataIndex].colAN = colAMVal;
-                allRowsCache[dataIndex].colAO = colANVal;
+                allRowsCache[dataIndex].colAN = colANFlag;
+                allRowsCache[dataIndex].colAO = colAOText;
               }
-              setCheckVisible(document.getElementById('checkSufficient'), colAMVal === '1');
+              setCheckVisible(document.getElementById('checkSufficient'), colANFlag === '1');
               updateRadioDisabledState();
-              // 결과(J열) 갱신
+              // 결과(K열) 갱신
               updateResultLabel(res.colK);
               takeSnapshot('sufficient');
               showConfirmSaveDone('저장되었습니다.');
@@ -1497,7 +1555,8 @@
             }
           })
           .catch(function(err) {
-            showConfirmSaveDone('저장 중 오류가 발생했습니다.');
+            console.error('[Save sufficient] error:', err);
+            showConfirmSaveDone('저장 중 오류가 발생했습니다: ' + err.message);
           });
         return;
       }
@@ -1806,9 +1865,13 @@
         var spans = labels.querySelectorAll('span');
         if (spans[0]) spans[0].textContent = d.colB || '';
         if (spans[1]) {
-          spans[1].textContent = d.colG || '';
+          if (d.colG) {
+            spans[1].innerHTML = escapeHtml(d.colG) + ' <i class="ti ti-click"></i>';
+          } else {
+            spans[1].textContent = '';
+          }
         }
-        if (spans[2]) spans[2].textContent = d.colK ? '{ ' + d.colK + ' }' : '';
+        if (spans[2]) spans[2].textContent = d.colK || '';
       }
 
       // meaning 필드 로드
@@ -1840,7 +1903,7 @@
         setCheckVisible(document.getElementById('checkNoEvidence'), true);
       }
 
-      // N열(관습적), S열(용병학문적), X열(기능주의적), AC열(개념 혼동), AH열(기타)
+      // N열(관습 추종), S열(외래학문), X열(결과위주), AC열('교육학'과 혼동), AH열(기타)
       if (d.colO && String(d.colO).trim() === '1') setCheckVisible(document.getElementById('checkCat1'), true);
       if (d.colT && String(d.colT).trim() === '1') setCheckVisible(document.getElementById('checkCat2'), true);
       if (d.colY && String(d.colY).trim() === '1') setCheckVisible(document.getElementById('checkCat3'), true);
@@ -1855,6 +1918,8 @@
 
       // 체크 상태에 따라 라디오 버튼 비활성화 업데이트
       updateRadioDisabledState();
+      // Result 칩 색상 업데이트
+      updateResultChipColor();
 
       // PDF placeholder 복원
       var panel = document.getElementById('pdfPanel');
@@ -2160,7 +2225,9 @@
       isEditingColG = true;
       var span = document.getElementById('colGSpan');
       var input = document.getElementById('colGInput');
-      input.value = span.textContent || '';
+      // Strip the mouse icon suffix for editing
+      var rawVal = (allRowsCache[dataIndex] && allRowsCache[dataIndex].colG) || '';
+      input.value = rawVal;
       span.style.display = 'none';
       input.style.display = '';
       input.focus();
@@ -2174,8 +2241,13 @@
       input.style.display = 'none';
       span.style.display = '';
       isEditingColG = false;
-      if (save && newVal !== (span.textContent || '')) {
-        span.textContent = newVal;
+      var currentRawVal = (allRowsCache[dataIndex] && allRowsCache[dataIndex].colG) || '';
+      if (save && newVal !== currentRawVal) {
+        if (newVal) {
+          span.innerHTML = escapeHtml(newVal) + ' <i class="ti ti-click"></i>';
+        } else {
+          span.textContent = '';
+        }
         if (allRowsCache[dataIndex]) allRowsCache[dataIndex].colG = newVal;
         // 캐시 갱신
         try {
@@ -2246,10 +2318,10 @@
 
         // 관습적 ~ 기타 (순서대로)
         var catItems = [
-          { flag: 'colO', text: 'colP', c1: 'colQ', c2: 'colR', c3: 'colS', name: '관습적' },
-          { flag: 'colT', text: 'colU', c1: 'colV', c2: 'colW', c3: 'colX', name: '용병학문적' },
-          { flag: 'colY', text: 'colZ', c1: 'colAA', c2: 'colAB', c3: 'colAC', name: '기능주의적' },
-          { flag: 'colAD', text: 'colAE', c1: 'colAF', c2: 'colAG', c3: 'colAH', name: '개념 혼동' },
+          { flag: 'colO', text: 'colP', c1: 'colQ', c2: 'colR', c3: 'colS', name: '관습 추종' },
+          { flag: 'colT', text: 'colU', c1: 'colV', c2: 'colW', c3: 'colX', name: '외래학문' },
+          { flag: 'colY', text: 'colZ', c1: 'colAA', c2: 'colAB', c3: 'colAC', name: '결과위주' },
+          { flag: 'colAD', text: 'colAE', c1: 'colAF', c2: 'colAG', c3: 'colAH', name: '\'교육학\'과 혼동' },
           { flag: 'colAI', text: 'colAJ', c1: 'colAK', c2: 'colAL', c3: 'colAM', name: '기타' }
         ];
         catItems.forEach(function(cat) {
@@ -2414,15 +2486,19 @@
     }
 
     // ── 드롭다운에 해당 열의 고유 값 로드 (오름차순) ──
+    // 기타(chk5) 선택 시 1차 분류에 기본으로 넣을 항목
+    var etcDefaultCat1 = ['과학주의', '이현령비현령', '유행사조', '현상-양태 혼동'];
+
     function populateCatDropdowns() {
       var info = getSelectedCatInfo();
       if (!info) return;
-      populateOneDropdown('cat1', info.c1Key);
+      var isEtc = document.getElementById('chk5').checked;
+      populateOneDropdown('cat1', info.c1Key, isEtc ? etcDefaultCat1 : null);
       populateOneDropdown('cat2', info.c2Key);
       populateOneDropdown('cat3', info.c3Key);
     }
 
-    function populateOneDropdown(selectId, colKey) {
+    function populateOneDropdown(selectId, colKey, defaultItems) {
       var sel = document.getElementById(selectId);
       var currentVal = sel.value;
       var defaultLabel = sel === document.getElementById('cat1') ? '1차 분류' :
@@ -2432,6 +2508,12 @@
       for (var i = 0; i < allRowsCache.length; i++) {
         var v = allRowsCache[i][colKey];
         if (v && String(v).trim()) vals[String(v).trim()] = true;
+      }
+      // 기본 항목 병합
+      if (defaultItems) {
+        for (var di = 0; di < defaultItems.length; di++) {
+          vals[defaultItems[di]] = true;
+        }
       }
       var sorted = Object.keys(vals).sort(function(a, b) { return a.localeCompare(b, 'ko'); });
 
