@@ -1785,6 +1785,7 @@
       let iframe = panel.querySelector('iframe');
       if (!iframe) {
         iframe = document.createElement('iframe');
+        iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
         panel.appendChild(iframe);
       }
 
