@@ -417,7 +417,7 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      padding: 12px 16px;
+      padding: 12px 10px;
       font-size: 14px;
       font-weight: 500;
       user-select: none;
@@ -439,7 +439,8 @@
       flex: 1;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      white-space: nowrap;
     }
 
     .expand-header .header-save {
@@ -471,7 +472,7 @@
     /* ── Header checkbox items (카테고리) ── */
     .header-check-items {
       display: flex;
-      gap: 22px;
+      gap: 10px;
       flex-wrap: nowrap;
       align-items: center;
     }
@@ -479,14 +480,15 @@
     .header-check-items label {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 3px;
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
+      white-space: nowrap;
     }
 
     .header-check-items input[type="radio"] {
-      width: 17px; height: 17px;
+      width: 15px; height: 15px;
       accent-color: #4a7cdf;
       cursor: pointer;
     }
@@ -909,13 +911,13 @@
       </div>
       <div class="top-right" style="justify-content: flex-start; flex: 1; min-width: 0;">
         <div class="col-labels" style="width: 100%;">
-          <span class="chip" id="colGSpan" title="클릭하여 수정" style="cursor:pointer;" onclick="startEditColG()"></span>
+          <span class="chip" id="colGSpan" title="클릭하여 수정" style="cursor:pointer; font-weight:700;" onclick="startEditColG()"></span>
           <input type="text" id="colGInput" class="chip" style="display:none; border:1px solid #5b9bd5; outline:none; font-size:14px; padding:4px 10px; min-width:60px; max-width:16em;" />
           <span id="colEqualSign" style="font-size:17px; font-weight:400; color:#666; flex:none; margin:0;">=</span>
-          <span class="chip" id="colJChip" title="클릭하여 수정" style="cursor:pointer; background:#f0e6d3; color:#6b4f2e; font-size:14px;" onclick="startEditColJ()">??? <i class="ti ti-click" style="font-size:15px; vertical-align:middle; opacity:0.55;"></i></span>
+          <span class="chip" id="colJChip" title="클릭하여 수정" style="cursor:pointer; background:#f0e6d3; color:#6b4f2e; font-size:14px; font-weight:700;" onclick="startEditColJ()">??? <i class="ti ti-click" style="font-size:15px; vertical-align:middle; opacity:0.55;"></i></span>
           <input type="text" id="colJChipInput" class="chip" style="display:none; border:1px solid #e0a854; outline:none; font-size:14px; padding:4px 10px; min-width:60px; max-width:16em; background:#fff8ef;" />
           <span class="result-label" style="flex: 0 0 auto; min-width: 0;"></span>
-          <button id="headerToggleBtn" onclick="toggleHeader()" style="flex:none; width:42px; height:22px; border:1px solid #ccc; border-radius:4px; background:#f0f2f5; cursor:pointer; font-size:14px; font-weight:700; color:#666; display:flex; align-items:center; justify-content:center; align-self:flex-end; margin-bottom:-1px; padding:0; transition:background 0.2s;" title="헤더 축소">▲</button>
+          <button id="headerToggleBtn" onclick="toggleHeader()" style="flex:none; width:42px; height:31px; border:1px solid #ccc; border-radius:4px; background:#f0f2f5; cursor:pointer; font-size:14px; font-weight:700; color:#666; display:flex; align-items:center; justify-content:center; padding:0; transition:background 0.2s;" title="헤더 축소">▲</button>
         </div>
       </div>
     </div>
@@ -1939,7 +1941,7 @@
         if (d.colB) {
           colBChip.innerHTML = '<i class="ti ti-click"></i> ' + escapeHtml(d.colB);
         } else {
-          colBChip.textContent = '';
+          colBChip.innerHTML = '<i class="ti ti-click"></i> ???';
         }
       }
 
@@ -1949,7 +1951,7 @@
         if (d.colG) {
           colGSpan.innerHTML = '<i class="ti ti-click"></i> ' + escapeHtml(d.colG);
         } else {
-          colGSpan.textContent = '';
+          colGSpan.innerHTML = '<i class="ti ti-click"></i> ???';
         }
       }
       // 결과 라벨
@@ -2543,8 +2545,7 @@
         if (found) smFilteredCache.push({idx: i, row: row});
       }
       document.getElementById('searchModalCount').textContent = '(' + smFilteredCache.length + '건)';
-      var maxShow = 200;
-      for (var f = 0; f < Math.min(smFilteredCache.length, maxShow); f++) {
+      for (var f = 0; f < smFilteredCache.length; f++) {
         var item = smFilteredCache[f];
         var tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
@@ -2577,18 +2578,6 @@
           tr.appendChild(td);
         }
         tbody.appendChild(tr);
-      }
-      if (smFilteredCache.length > maxShow) {
-        var tr2 = document.createElement('tr');
-        var td2 = document.createElement('td');
-        td2.colSpan = smSearchCols.length;
-        td2.style.padding = '8px';
-        td2.style.textAlign = 'center';
-        td2.style.color = '#888';
-        td2.style.fontSize = '13px';
-        td2.textContent = '... 외 ' + (smFilteredCache.length - maxShow) + '건';
-        tr2.appendChild(td2);
-        tbody.appendChild(tr2);
       }
     }
 
@@ -2641,7 +2630,7 @@
         dd.style.display = 'none';
       };
       dd.appendChild(allDiv);
-      for (var s = 0; s < Math.min(sorted.length, 300); s++) {
+      for (var s = 0; s < sorted.length; s++) {
         (function(val) {
           var div = document.createElement('div');
           div.textContent = val;
@@ -2983,6 +2972,24 @@
     });
 
     // ── Prev/Next 버튼 너비를 Load/Drive 에 맞춤 ──
+    function autoFitSectionLabels() {
+      var sections = document.querySelectorAll('.expand-header');
+      for (var i = 0; i < sections.length; i++) {
+        var hdr = sections[i];
+        var content = hdr.querySelector('.header-content') || hdr.querySelector('.header-check-items');
+        if (!content) continue;
+        // Reset font size
+        var labels = content.querySelectorAll('label');
+        for (var l = 0; l < labels.length; l++) labels[l].style.fontSize = '';
+        // Check overflow
+        var fs = 14;
+        while (hdr.scrollWidth > hdr.clientWidth && fs > 8) {
+          fs--;
+          for (var l = 0; l < labels.length; l++) labels[l].style.fontSize = fs + 'px';
+        }
+      }
+    }
+
     function alignNavButtons() {
       var loadBtn = document.getElementById('btnLoad');
       var searchBtn = document.getElementById('btnSearch');
@@ -2996,7 +3003,8 @@
       var driveW = driveBtn.offsetWidth;
       prevBtn.style.width = driveW + 'px'; prevBtn.style.minWidth = driveW + 'px';
       navInput.style.width = searchW + 'px'; navInput.style.minWidth = searchW + 'px'; navInput.style.maxWidth = searchW + 'px';
-      nextBtn.style.width = loadW + 'px'; nextBtn.style.minWidth = loadW + 'px';
+      nextBtn.style.width = driveW + 'px'; nextBtn.style.minWidth = driveW + 'px';
+      loadBtn.style.width = driveW + 'px'; loadBtn.style.minWidth = driveW + 'px';
     }
 
     // ── 페이지 로드 시 전체 데이터 불러오기 ──
@@ -3004,7 +3012,7 @@
       loadAllData();
       alignNavButtons();
       setTimeout(alignNavButtons, 100);
-      window.addEventListener('resize', alignNavButtons);
+      window.addEventListener('resize', function(){ alignNavButtons(); });
       // 분류 추가 팝오버 Enter 키
       ['1','2','3'].forEach(function(num) {
         document.getElementById('catPopInput' + num).addEventListener('keydown', function(e) {
