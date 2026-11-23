@@ -416,7 +416,7 @@
     .expand-header {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 1ch;
       padding: 12px 10px;
       font-size: 14px;
       font-weight: 500;
@@ -472,7 +472,7 @@
     /* ── Header checkbox items (카테고리) ── */
     .header-check-items {
       display: flex;
-      gap: 10px;
+      gap: calc(10px + 1em);
       flex-wrap: nowrap;
       align-items: center;
     }
@@ -480,7 +480,7 @@
     .header-check-items label {
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 1ch;
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
@@ -942,7 +942,7 @@
         <div class="expand-header">
           <input type="radio" name="sectionRadio" id="chkNoEvidence" onclick="onRadioClick(event, 'noevidence')" />
           <div class="header-content">
-            <label for="chkNoEvidence" style="cursor:pointer;">무근거 혹은 불충분 근거</label><span class="section-check" id="checkNoEvidence">✓</span>
+            <label for="chkNoEvidence" style="cursor:pointer;">교육과 교육학의 혼동</label><span class="section-check" id="checkNoEvidence">✓</span>
           </div>
           <button class="btn btn-save-section header-save" id="btnSaveNoEvidence" onclick="saveSection('noevidence')" disabled>Save</button>
         </div>
@@ -959,7 +959,6 @@
               <label><input type="radio" name="sectionRadio" id="chk1" onclick="onRadioClick(event, 'cat')" /> 관습 추종<span class="section-check" id="checkCat1">✓</span></label>
               <label><input type="radio" name="sectionRadio" id="chk2" onclick="onRadioClick(event, 'cat')" /> 외래학문<span class="section-check" id="checkCat2">✓</span></label>
               <label><input type="radio" name="sectionRadio" id="chk3" onclick="onRadioClick(event, 'cat')" /> 결과위주<span class="section-check" id="checkCat3">✓</span></label>
-              <label><input type="radio" name="sectionRadio" id="chk4" onclick="onRadioClick(event, 'cat')" /> '교육학'과 혼동<span class="section-check" id="checkCat4">✓</span></label>
               <label><input type="radio" name="sectionRadio" id="chk5" onclick="onRadioClick(event, 'cat')" /> 기타<span class="section-check" id="checkCat5">✓</span></label>
             </div>
           </div>
@@ -1138,7 +1137,7 @@
       }
     })();
 
-    const catRadioIds = ['chk1','chk2','chk3','chk4','chk5'];
+    const catRadioIds = ['chk1','chk2','chk3','chk5'];
 
     // ── 현재 활성 섹션 & 저장된 상태 추적 ──
     let activeSection = null; // 'noevidence' | 'cat' | 'sufficient' | null
@@ -1351,7 +1350,7 @@
       // 타겟 섹션 활성화
       if (targetSection === 'noevidence') {
         sectionNoEv.classList.add('active');
-        sectionCat.classList.add('disabled-section');
+        // 교육혼동과 카테고리는 공존 가능 → 카테고리 disabled-section 제거
         sectionSuf.classList.add('disabled-section');
         document.getElementById('btnSaveNoEvidence').disabled = false;
         document.getElementById('btnSaveCategories').disabled = true;
@@ -1363,7 +1362,7 @@
         }
       } else if (targetSection === 'cat') {
         sectionCat.classList.add('active');
-        sectionNoEv.classList.add('disabled-section');
+        // 교육혼동과 카테고리는 공존 가능 → 교육혼동 disabled-section 제거
         sectionSuf.classList.add('disabled-section');
         document.getElementById('btnSaveNoEvidence').disabled = true;
         document.getElementById('btnSaveCategories').disabled = false;
@@ -1377,10 +1376,10 @@
         document.getElementById('btnSaveNoEvidence').disabled = true;
         document.getElementById('btnSaveCategories').disabled = true;
         document.getElementById('btnSaveSufficient').disabled = false;
-        // AN열 값 로드
+        // AJ열 값 로드
         if (allRowsCache[dataIndex]) {
           var d = allRowsCache[dataIndex];
-          document.getElementById('anColField').value = d.colAO || '';
+          document.getElementById('anColField').value = d.colAJ || '';
         }
       }
 
@@ -1487,21 +1486,21 @@
     function updateRadioDisabledState() {
       var noEvChecked = document.getElementById('checkNoEvidence').classList.contains('visible');
       var sufChecked = document.getElementById('checkSufficient').classList.contains('visible');
-      var catChecked = ['checkCat1','checkCat2','checkCat3','checkCat4','checkCat5'].some(function(id) {
+      var catChecked = ['checkCat1','checkCat2','checkCat3','checkCat5'].some(function(id) {
         return document.getElementById(id).classList.contains('visible');
       });
 
-      // 무근거 체크 → 카테고리(chk1~5), 충분(chkSufficient) 비활성
-      // 충분 체크 → 무근거(chkNoEvidence), 카테고리(chk1~5) 비활성
-      // 카테고리 중 하나라도 체크 → 무근거(chkNoEvidence), 충분(chkSufficient) 비활성
+      // 교육혼동 + 카테고리는 공존 가능, 충분과는 상호 배타
+      // 교육혼동 or 카테고리 체크 → 충분 비활성
+      // 충분 체크 → 교육혼동, 카테고리 비활성
 
-      var disableNoEv = sufChecked || catChecked;
+      var disableNoEv = sufChecked;
       var disableSuf = noEvChecked || catChecked;
-      var disableCats = noEvChecked || sufChecked;
+      var disableCats = sufChecked;
 
       document.getElementById('chkNoEvidence').disabled = disableNoEv;
       document.getElementById('chkSufficient').disabled = disableSuf;
-      ['chk1','chk2','chk3','chk4','chk5'].forEach(function(id) {
+      ['chk1','chk2','chk3','chk5'].forEach(function(id) {
         document.getElementById(id).disabled = disableCats;
       });
     }
@@ -1525,7 +1524,7 @@
 
       var noEvChecked = document.getElementById('checkNoEvidence').classList.contains('visible');
       var sufChecked = document.getElementById('checkSufficient').classList.contains('visible');
-      var catChecked = ['checkCat1','checkCat2','checkCat3','checkCat4','checkCat5'].some(function(id) {
+      var catChecked = ['checkCat1','checkCat2','checkCat3','checkCat5'].some(function(id) {
         return document.getElementById(id).classList.contains('visible');
       });
 
@@ -1591,9 +1590,9 @@
 
       if (type === 'sufficient') {
         var anText = document.getElementById('anColField').value.trim();
-        var colANFlag = anText ? '1' : '0';
-        var colAOText = anText || '';
-        var payload = { action: 'saveSufficient', row: currentRow, colAM: colANFlag, colAN: colAOText };
+        var colAIFlag = anText ? '1' : '0';
+        var colAJText = anText || '';
+        var payload = { action: 'saveSufficient', row: currentRow, colAI: colAIFlag, colAJ: colAJText };
         console.log('[Save sufficient] payload:', JSON.stringify(payload));
 
         fetch(GAS_URL, {
@@ -1606,10 +1605,10 @@
             console.log('[Save sufficient] response:', JSON.stringify(res));
             if (res.success) {
               if (allRowsCache[dataIndex]) {
-                allRowsCache[dataIndex].colAN = colANFlag;
-                allRowsCache[dataIndex].colAO = colAOText;
+                allRowsCache[dataIndex].colAI = colAIFlag;
+                allRowsCache[dataIndex].colAJ = colAJText;
               }
-              setCheckVisible(document.getElementById('checkSufficient'), colANFlag === '1');
+              setCheckVisible(document.getElementById('checkSufficient'), colAIFlag === '1');
               updateRadioDisabledState();
               // 결과(K열) 갱신
               updateResultLabel(res.colK);
@@ -1887,7 +1886,7 @@
     }
 
     // ── 데이터 캐시 (전체 한 번에 로드) ──
-    var CACHE_VERSION = 'v3_colDEF'; // 열 구조 변경 시 버전 갱신 (D저자, E연도, F논문명 추가)
+    var CACHE_VERSION = 'v4_colShift'; // 열 구조 변경: AD-AH 삭제, AI-AO→AD-AJ 이동, 무근거→교육혼동
     let allRowsCache = []; // [{row, colA, colB, colG, colH, colI, colJ, colK, ...}, ...]
     let dataIndex = 0;     // 현재 표시 중인 캐시 인덱스
     let dataLoaded = false;
@@ -1989,7 +1988,6 @@
       setCheckVisible(document.getElementById('checkCat1'), false);
       setCheckVisible(document.getElementById('checkCat2'), false);
       setCheckVisible(document.getElementById('checkCat3'), false);
-      setCheckVisible(document.getElementById('checkCat4'), false);
       setCheckVisible(document.getElementById('checkCat5'), false);
 
       // L열 값에 따라 체크 표시만 (섹션 확장 없음)
@@ -1998,16 +1996,15 @@
         setCheckVisible(document.getElementById('checkNoEvidence'), true);
       }
 
-      // N열(관습 추종), S열(외래학문), X열(결과위주), AC열('교육학'과 혼동), AH열(기타)
+      // O열(관습 추종), T열(외래학문), Y열(결과위주), AD열(기타)
       if (d.colO && String(d.colO).trim() === '1') setCheckVisible(document.getElementById('checkCat1'), true);
       if (d.colT && String(d.colT).trim() === '1') setCheckVisible(document.getElementById('checkCat2'), true);
       if (d.colY && String(d.colY).trim() === '1') setCheckVisible(document.getElementById('checkCat3'), true);
-      if (d.colAD && String(d.colAD).trim() === '1') setCheckVisible(document.getElementById('checkCat4'), true);
-      if (d.colAI && String(d.colAI).trim() === '1') setCheckVisible(document.getElementById('checkCat5'), true);
+      if (d.colAD && String(d.colAD).trim() === '1') setCheckVisible(document.getElementById('checkCat5'), true);
 
-      // AM열 값에 따라 체크 표시만 (섹션 확장 없음)
-      if (d.colAN && String(d.colAN).trim() === '1') {
-        savedSnapshots.sufficient = d.colAO || '';
+      // AI열 값에 따라 체크 표시만 (섹션 확장 없음)
+      if (d.colAI && String(d.colAI).trim() === '1') {
+        savedSnapshots.sufficient = d.colAJ || '';
         setCheckVisible(document.getElementById('checkSufficient'), true);
       }
 
@@ -2674,10 +2671,10 @@
         // 판정 사유
         var reasonsHtml = '';
 
-        // 무근거 혹은 불충분 근거
+        // 교육과 교육학의 혼동
         if (d.colM && String(d.colM).trim() === '1' && d.colN) {
           reasonsHtml += '<div class="print-reason-block">';
-          reasonsHtml += '<div class="print-reason-title">* 무근거 혹은 불충분 근거 판정 사유</div>';
+          reasonsHtml += '<div class="print-reason-title">* 교육과 교육학의 혼동 판정 사유</div>';
           reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colN) + '</div>';
           reasonsHtml += '</div>';
         }
@@ -2687,8 +2684,7 @@
           { flag: 'colO', text: 'colP', c1: 'colQ', c2: 'colR', c3: 'colS', name: '관습 추종' },
           { flag: 'colT', text: 'colU', c1: 'colV', c2: 'colW', c3: 'colX', name: '외래학문' },
           { flag: 'colY', text: 'colZ', c1: 'colAA', c2: 'colAB', c3: 'colAC', name: '결과위주' },
-          { flag: 'colAD', text: 'colAE', c1: 'colAF', c2: 'colAG', c3: 'colAH', name: '\'교육학\'과 혼동' },
-          { flag: 'colAI', text: 'colAJ', c1: 'colAK', c2: 'colAL', c3: 'colAM', name: '기타' }
+          { flag: 'colAD', text: 'colAE', c1: 'colAF', c2: 'colAG', c3: 'colAH', name: '기타' }
         ];
         catItems.forEach(function(cat) {
           if (d[cat.flag] && String(d[cat.flag]).trim() === '1' && d[cat.text]) {
@@ -2705,10 +2701,10 @@
         });
 
         // 충분 혹은 양호
-        if (d.colAN && String(d.colAN).trim() === '1' && d.colAO) {
+        if (d.colAI && String(d.colAI).trim() === '1' && d.colAJ) {
           reasonsHtml += '<div class="print-reason-block">';
           reasonsHtml += '<div class="print-reason-title">* 충분 혹은 양호 판정 사유</div>';
-          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colAO) + '</div>';
+          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colAJ) + '</div>';
           reasonsHtml += '</div>';
         }
 
@@ -2824,7 +2820,6 @@
         chk_conventional: document.getElementById('chk1').checked,
         chk_mercenary: document.getElementById('chk2').checked,
         chk_functionalist: document.getElementById('chk3').checked,
-        chk_conceptConfusion: document.getElementById('chk4').checked,
         chk_other: document.getElementById('chk5').checked,
         analysis: document.getElementById('analysisField').value,
         cat1: document.getElementById('cat1').value,
@@ -2842,8 +2837,7 @@
         chk1: { startCol: 15, flagKey:'colO', textKey:'colP', c1Key:'colQ', c2Key:'colR', c3Key:'colS', checkId:'checkCat1' },
         chk2: { startCol: 20, flagKey:'colT', textKey:'colU', c1Key:'colV', c2Key:'colW', c3Key:'colX', checkId:'checkCat2' },
         chk3: { startCol: 25, flagKey:'colY', textKey:'colZ', c1Key:'colAA', c2Key:'colAB', c3Key:'colAC', checkId:'checkCat3' },
-        chk4: { startCol: 30, flagKey:'colAD', textKey:'colAE', c1Key:'colAF', c2Key:'colAG', c3Key:'colAH', checkId:'checkCat4' },
-        chk5: { startCol: 35, flagKey:'colAI', textKey:'colAJ', c1Key:'colAK', c2Key:'colAL', c3Key:'colAM', checkId:'checkCat5' }
+        chk5: { startCol: 30, flagKey:'colAD', textKey:'colAE', c1Key:'colAF', c2Key:'colAG', c3Key:'colAH', checkId:'checkCat5' }
       };
       for (var id in map) {
         if (document.getElementById(id).checked) return map[id];
@@ -2852,16 +2846,17 @@
     }
 
     // ── 드롭다운에 해당 열의 고유 값 로드 (오름차순) ──
-    // 기타(chk5) 선택 시 1차 분류에 기본으로 넣을 항목
-    var etcDefaultCat1 = ['과학주의', '이현령비현령', '유행사조', '현상-양태 혼동'];
+    // 기타(chk5) 선택 시 1·2·3차 분류에 기본으로 넣을 항목
+    var etcDefaultItems = ['과학주의', '이현령비현령', '유행사조', '현상-양태 혼동'];
 
     function populateCatDropdowns() {
       var info = getSelectedCatInfo();
       if (!info) return;
       var isEtc = document.getElementById('chk5').checked;
-      populateOneDropdown('cat1', info.c1Key, isEtc ? etcDefaultCat1 : null);
-      populateOneDropdown('cat2', info.c2Key);
-      populateOneDropdown('cat3', info.c3Key);
+      var defaults = isEtc ? etcDefaultItems : null;
+      populateOneDropdown('cat1', info.c1Key, defaults);
+      populateOneDropdown('cat2', info.c2Key, defaults);
+      populateOneDropdown('cat3', info.c3Key, defaults);
     }
 
     function populateOneDropdown(selectId, colKey, defaultItems) {
