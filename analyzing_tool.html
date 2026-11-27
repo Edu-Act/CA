@@ -147,6 +147,156 @@
       font-size: 13px;
     }
     .btn-save-section:hover:not(:disabled) { background: #3a65c0; }
+    .btn-ai-section {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 6px;
+      transition: background 0.2s;
+    }
+    .btn-ai-section:hover { background: #c8e6c9; }
+    .btn-close-section {
+      background: #fff3e0;
+      color: #e65100;
+      border: 1px solid #ffcc80;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 6px;
+      transition: background 0.2s;
+    }
+    .btn-close-section:hover { background: #ffe0b2; }
+
+    /* Navigation Confirm Modal */
+    .nav-confirm-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    }
+    .nav-confirm-overlay.active { display: flex; }
+    .nav-confirm-box {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      padding: 24px 28px;
+      min-width: 300px;
+      max-width: 420px;
+      text-align: center;
+    }
+    .nav-confirm-msg {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .nav-confirm-btns {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .nav-confirm-btns button {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .nav-btn-save-go { background: #4a7cdf; color: #fff; }
+    .nav-btn-save-go:hover { background: #3a65c0; }
+    .nav-btn-discard-go { background: #e0e0e0; color: #333; }
+    .nav-btn-discard-go:hover { background: #ccc; }
+    .nav-btn-cancel { background: #f5f5f5; color: #666; border: 1px solid #ddd !important; }
+    .nav-btn-cancel:hover { background: #eee; }
+
+    /* AI Modal Overlay */
+    .ai-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 9999;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .ai-modal-overlay.active { display: flex; }
+    .ai-modal-box {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      padding: 24px 28px;
+      min-width: 340px;
+      max-width: 600px;
+      width: 90%;
+      position: relative;
+    }
+    .ai-modal-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #2e7d32;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .ai-modal-value {
+      font-size: 14px;
+      color: #222;
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .ai-modal-value.ai-judgment {
+      min-height: 24px;
+      margin-bottom: 10px;
+    }
+    .ai-modal-value.ai-reason {
+      min-height: 240px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 14px;
+    }
+    .ai-modal-bottom-btns {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .ai-modal-close {
+      padding: 8px 28px;
+      background: #e0e0e0;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .ai-modal-close:hover { background: #ccc; }
+    .ai-modal-apply {
+      padding: 8px 28px;
+      background: #4a7cdf;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .ai-modal-apply:hover { background: #3a65c0; }
 
     /* ── Navigation ── */
     .nav-btn {
@@ -482,7 +632,7 @@
       display: inline-flex; align-items: center; gap: 5px; margin-left: 8px;
     }
     .inline-dropdown-group select {
-      font-size: 12px; padding: 4px 24px 4px 10px; border: 1.5px solid #ccc; border-radius: 16px;
+      font-size: 12px; padding: 7px 24px 7px 10px; border: 1.5px solid #ccc; border-radius: 16px;
       background: #fff; cursor: pointer; min-width: 110px;
       appearance: none; -webkit-appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
@@ -985,7 +1135,7 @@
           <span id="colBChip" onclick="startEditColB()" title="클릭하여 수정" style="cursor:pointer; margin-right: auto; text-align: left; padding: 3px 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: #dff0df; border-radius: 20px; color: #2e6b3a; font-size: 14px; font-weight: 700; letter-spacing: 0.02em; max-width: 16em;"></span>
           <input type="text" id="colBInput" style="display:none; border:1px solid #28a745; outline:none; font-size:14px; padding:3px 10px; min-width:60px; max-width:16em; border-radius:20px; background:#f0fff0; margin-right:auto;" />
           <button class="btn btn-info action-btn-h" onclick="reloadData()">Reload</button>
-          <button class="btn btn-success action-btn-h" onclick="openSheet()">Sheet</button>
+          <button class="btn btn-success action-btn-h" id="btnSheet" onclick="openSheet()">Sheet</button>
           <button class="btn btn-warning action-btn-h" onclick="printPage()">Print</button>
           <button class="btn btn-secondary action-btn-h" onclick="confirmLogout()">Log-out</button>
         </div>
@@ -1034,10 +1184,10 @@
             <div class="header-check-items">
               <label onclick="event.stopPropagation();"><input type="radio" name="confusingRadio" id="radioConfNeq" value="교육≠교육학" onclick="expandSection('confusing');" /> 교육≠교육학</label>
               <label onclick="event.stopPropagation();"><input type="radio" name="confusingRadio" id="radioConfEq" value="교육=교육학" onclick="expandSection('confusing');" /> 교육=교육학</label>
-              <span class="section-check" id="checkConfusing">✓</span>
+              <span class="section-check" id="checkConfusing" style="display:none;">✓</span>
             </div>
           </div>
-          <button class="btn btn-save-section header-save" id="btnSaveConfusing" onclick="event.stopPropagation(); saveSection('confusing');" disabled>Save</button>
+          <button class="btn-ai-section" onclick="event.stopPropagation(); showAiModal('confusing');">by AI</button><button class="btn-close-section" onclick="event.stopPropagation(); closeSectionBtn('confusing');">Close</button><button class="btn btn-save-section header-save" id="btnSaveConfusing" onclick="event.stopPropagation(); saveSection('confusing');" disabled>Save</button>
         </div>
         <div class="expand-body">
           <textarea class="form-textarea textarea-tall" id="confusingTextField" placeholder="판정 근거를 입력하세요..."></textarea>
@@ -1069,10 +1219,10 @@
                   </select>
                 </span>
               </label>
-              <span class="section-check" id="checkInstitutional">✓</span>
+              <span class="section-check" id="checkInstitutional" style="display:none;">✓</span>
             </div>
           </div>
-          <button class="btn btn-save-section header-save" id="btnSaveInstitutional" onclick="event.stopPropagation(); saveSection('institutional');" disabled>Save</button>
+          <button class="btn-ai-section" onclick="event.stopPropagation(); showAiModal('institutional');">by AI</button><button class="btn-close-section" onclick="event.stopPropagation(); closeSectionBtn('institutional');">Close</button><button class="btn btn-save-section header-save" id="btnSaveInstitutional" onclick="event.stopPropagation(); saveSection('institutional');" disabled>Save</button>
         </div>
         <div class="expand-body">
           <textarea class="form-textarea textarea-tall" id="institutionalTextField" placeholder="판정 근거를 입력하세요..."></textarea>
@@ -1101,10 +1251,10 @@
                   </span>
                 </span>
               </label>
-              <span class="section-check" id="checkReferencing">✓</span>
+              <span class="section-check" id="checkReferencing" style="display:none;">✓</span>
             </div>
           </div>
-          <button class="btn btn-save-section header-save" id="btnSaveReferencing" onclick="event.stopPropagation(); saveSection('referencing');" disabled>Save</button>
+          <button class="btn-ai-section" onclick="event.stopPropagation(); showAiModal('referencing');">by AI</button><button class="btn-close-section" onclick="event.stopPropagation(); closeSectionBtn('referencing');">Close</button><button class="btn btn-save-section header-save" id="btnSaveReferencing" onclick="event.stopPropagation(); saveSection('referencing');" disabled>Save</button>
         </div>
         <div class="expand-body">
           <textarea class="form-textarea textarea-tall" id="referencingTextField" placeholder="판정 근거를 입력하세요..."></textarea>
@@ -1133,10 +1283,10 @@
                   </span>
                 </span>
               </label>
-              <span class="section-check" id="checkFunctioning">✓</span>
+              <span class="section-check" id="checkFunctioning" style="display:none;">✓</span>
             </div>
           </div>
-          <button class="btn btn-save-section header-save" id="btnSaveFunctioning" onclick="event.stopPropagation(); saveSection('functioning');" disabled>Save</button>
+          <button class="btn-ai-section" onclick="event.stopPropagation(); showAiModal('functioning');">by AI</button><button class="btn-close-section" onclick="event.stopPropagation(); closeSectionBtn('functioning');">Close</button><button class="btn btn-save-section header-save" id="btnSaveFunctioning" onclick="event.stopPropagation(); saveSection('functioning');" disabled>Save</button>
         </div>
         <div class="expand-body">
           <textarea class="form-textarea textarea-tall" id="functioningTextField" placeholder="판정 근거를 입력하세요..."></textarea>
@@ -1146,9 +1296,173 @@
     </div>
   </div>
 
+  <!-- AI 분석 결과 모달 -->
+  <div class="ai-modal-overlay" id="aiModalOverlay" onclick="closeAiModal();">
+    <div class="ai-modal-box" onclick="event.stopPropagation();">
+      <div class="ai-modal-title" id="aiModalTitle">AI 분석 결과</div>
+      <div class="ai-modal-value ai-judgment" id="aiModalJudgment">-</div>
+      <div class="ai-modal-value ai-reason" id="aiModalReason">-</div>
+      <div class="ai-modal-bottom-btns">
+        <button class="ai-modal-close" onclick="closeAiModal();">Close</button>
+        <button class="ai-modal-apply" onclick="applyAiToSection();">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 섹션 이동 확인 모달 -->
+  <div class="nav-confirm-overlay" id="navConfirmOverlay">
+    <div class="nav-confirm-box">
+      <div class="nav-confirm-msg" id="navConfirmMsg">수정된 내용이 저장되지 않았습니다.</div>
+      <div class="nav-confirm-btns" id="navConfirmBtns">
+        <button class="nav-btn-save-go" onclick="navConfirmSaveAndGo();">저장 후 이동</button>
+        <button class="nav-btn-discard-go" onclick="navConfirmDiscardAndGo();">저장 없이 이동</button>
+        <button class="nav-btn-cancel" onclick="navConfirmCancel();">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 섹션 닫기 확인 모달 -->
+  <div class="nav-confirm-overlay" id="closeConfirmOverlay">
+    <div class="nav-confirm-box">
+      <div class="nav-confirm-msg">수정된 내용이 저장되지 않았습니다. 저장 없이 닫으시겠습니까?</div>
+      <div class="nav-confirm-btns">
+        <button class="nav-btn-discard-go" onclick="closeConfirmYes();">저장 없이 닫기</button>
+        <button class="nav-btn-cancel" onclick="closeConfirmCancel();">취소</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbymfrHvJsVThc7RtoAOjn8ZOLkoJdMb1CVcfUQJm4fvY53a9FxOCBhJek-4Xl6YN0lcDg/exec';
     let currentRow = 2;
+
+    // ── AI 모달 표시/닫기/적용 ──
+    var aiSectionMap = {
+      confusing:     { judgmentCol: 'colT', reasonCol: 'colU', title: '① 교육≠교육학 / 교육=교육학 (AI)', radioName: 'confusingRadio', textareaId: 'confusingTextField' },
+      institutional: { judgmentCol: 'colV', reasonCol: 'colW', title: '② 제도 기반 / 제도 무관 (AI)', radioName: 'institutionalRadio', textareaId: 'institutionalTextField' },
+      referencing:   { judgmentCol: 'colX', reasonCol: 'colY', title: '③ 상식 참조 / 학적 지식 참조 (AI)', radioName: 'referencingRadio', textareaId: 'referencingTextField' },
+      functioning:   { judgmentCol: 'colZ', reasonCol: 'colAA', title: '④ 기대 결과 혹은 기능 (AI)', radioName: 'functioningRadio', textareaId: 'functioningTextField' }
+    };
+    var currentAiSection = null;
+
+    function showAiModal(section) {
+      var map = aiSectionMap[section];
+      if (!map) return;
+      currentAiSection = section;
+
+      // 해당 섹션 열기
+      expandSection(section);
+
+      var judgment = '-';
+      var reason = '-';
+
+      // allRowsCache에서 현재 행 데이터 가져오기
+      if (typeof allRowsCache !== 'undefined' && allRowsCache && typeof dataIndex !== 'undefined' && allRowsCache[dataIndex]) {
+        var rowObj = allRowsCache[dataIndex];
+        judgment = rowObj[map.judgmentCol] || '-';
+        reason = rowObj[map.reasonCol] || '-';
+      }
+
+      document.getElementById('aiModalTitle').textContent = map.title;
+      document.getElementById('aiModalJudgment').textContent = judgment;
+      document.getElementById('aiModalReason').textContent = reason;
+
+      // 오른쪽 패널(form-panel) 기준으로 위치 설정
+      var overlay = document.getElementById('aiModalOverlay');
+      var modalBox = overlay.querySelector('.ai-modal-box');
+      var formPanel = document.querySelector('.form-panel');
+
+      // 먼저 보이게 해서 모달 높이를 측정
+      overlay.classList.add('active');
+
+      if (formPanel) {
+        var rect = formPanel.getBoundingClientRect();
+        var modalHeight = modalBox.offsetHeight;
+        overlay.style.alignItems = 'flex-start';
+        overlay.style.justifyContent = 'flex-start';
+        var centerX = rect.left + rect.width / 2;
+        var boxWidth = Math.min(520, rect.width * 0.9);
+        modalBox.style.width = boxWidth + 'px';
+        var leftPos = centerX - boxWidth / 2;
+        leftPos = Math.max(10, leftPos);
+        modalBox.style.marginLeft = leftPos + 'px';
+        // 세로: 패널 중앙에서 모달 높이만큼 위로
+        var centerY = rect.top + rect.height / 2;
+        var topPos = centerY - modalHeight;
+        topPos = Math.max(10, topPos);
+        modalBox.style.marginTop = topPos + 'px';
+      } else {
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        modalBox.style.marginTop = '';
+        modalBox.style.marginLeft = '';
+        modalBox.style.width = '';
+      }
+    }
+
+    function closeAiModal() {
+      document.getElementById('aiModalOverlay').classList.remove('active');
+      currentAiSection = null;
+    }
+
+    function applyAiToSection() {
+      if (!currentAiSection) return;
+      var map = aiSectionMap[currentAiSection];
+      if (!map) return;
+
+      var judgment = document.getElementById('aiModalJudgment').textContent || '';
+      var reason = document.getElementById('aiModalReason').textContent || '';
+
+      if (judgment === '-') judgment = '';
+      if (reason === '-') reason = '';
+
+      // 라디오 버튼 선택
+      if (judgment.trim()) {
+        var radios = document.querySelectorAll('input[name="' + map.radioName + '"]');
+        var matched = false;
+        radios.forEach(function(r) {
+          if (r.value === judgment.trim()) {
+            r.checked = true;
+            matched = true;
+            // 라디오 버튼의 onclick 이벤트 트리거
+            r.click();
+          }
+        });
+        // 매칭되는 라디오가 없으면 가장 가까운 값 시도
+        if (!matched && currentAiSection === 'institutional') {
+          // institutional은 드롭다운 하위값일 수 있음
+          var val = judgment.trim();
+          if (val === '학교 사태' || val === '학교외 기관 사태') {
+            document.getElementById('radioInstBasis').click();
+            setDropdownValue('instBasisDropdown', val);
+          } else if (val === '제도 배제' || val === '제도 포괄') {
+            document.getElementById('radioInstNone').click();
+            setDropdownValue('instNoneDropdown', val);
+          }
+        }
+        if (!matched && currentAiSection === 'referencing') {
+          var val = judgment.trim();
+          if (val === '상식' || val === '상식 참조') {
+            document.getElementById('radioRefCommon').click();
+          } else {
+            document.getElementById('radioRefAcademic').click();
+            setDropdownValue('refDropdown', val);
+          }
+        }
+        if (!matched && currentAiSection === 'functioning') {
+          document.getElementById('radioFunc').click();
+          setDropdownValue('funcDropdown', judgment.trim());
+        }
+      }
+
+      // 텍스트 영역에 사유 입력
+      var textarea = document.getElementById(map.textareaId);
+      if (textarea) {
+        textarea.value = reason;
+      }
+
+      closeAiModal();
+    }
 
     // PDF 패널 가운데 + 위쪽에 모달 배치
     function positionModalOnPdfPanel(modal, modalBox) {
@@ -1266,6 +1580,12 @@
       referencing: '',
       functioning: ''
     };
+    let savedRadioSnapshots = {
+      confusing: '',
+      institutional: '',
+      referencing: '',
+      functioning: ''
+    };
 
     function getTextareaId(section) {
       if (section === 'confusing') return 'confusingTextField';
@@ -1275,17 +1595,43 @@
       return null;
     }
 
+    function getRadioName(section) {
+      if (section === 'confusing') return 'confusingRadio';
+      if (section === 'institutional') return 'institutionalRadio';
+      if (section === 'referencing') return 'referencingRadio';
+      if (section === 'functioning') return 'functioningRadio';
+      return null;
+    }
+
+    function getCurrentRadioValue(section) {
+      var name = getRadioName(section);
+      if (!name) return '';
+      var sel = document.querySelector('input[name="' + name + '"]:checked');
+      return sel ? sel.value : '';
+    }
+
     function isSectionDirty(section) {
       if (!section) return false;
       var tid = getTextareaId(section);
       if (!tid) return false;
-      return document.getElementById(tid).value !== savedSnapshots[section];
+      var textDirty = document.getElementById(tid).value !== savedSnapshots[section];
+      var radioDirty = getCurrentRadioValue(section) !== savedRadioSnapshots[section];
+      return textDirty || radioDirty;
+    }
+
+    function isSectionHasInput(section) {
+      if (!section) return false;
+      var tid = getTextareaId(section);
+      var hasText = tid && document.getElementById(tid).value.trim() !== '';
+      var hasRadio = getCurrentRadioValue(section) !== '';
+      return hasText || hasRadio;
     }
 
     function takeSnapshot(section) {
       if (!section) return;
       var tid = getTextareaId(section);
       if (tid) savedSnapshots[section] = document.getElementById(tid).value;
+      savedRadioSnapshots[section] = getCurrentRadioValue(section);
     }
 
     // ── 섹션 토글 (독립적 확장/축소) ──
@@ -1293,9 +1639,10 @@
       var sectionEl = getSectionEl(section);
       if (!sectionEl) return;
       if (sectionEl.classList.contains('active')) {
+        // 닫기 — dirty check은 Close 버튼에서만
         collapseSection(section);
       } else {
-        expandSection(section);
+        tryExpandSection(section);
       }
     }
 
@@ -1309,10 +1656,33 @@
 
     var allSections = ['confusing','institutional','referencing','functioning'];
 
-    function expandSection(section) {
+    // 현재 열려있는 섹션 찾기
+    function getActiveSection() {
+      for (var i = 0; i < allSections.length; i++) {
+        var el = getSectionEl(allSections[i]);
+        if (el && el.classList.contains('active')) return allSections[i];
+      }
+      return null;
+    }
+
+    // 네비게이션 가드: 열려있는 섹션이 dirty하면 확인 모달
+    var pendingNavTarget = null;
+    var pendingNavType = null; // 'expand' or 'ai'
+
+    function tryExpandSection(section, navType) {
+      var active = getActiveSection();
+      if (active && active !== section && isSectionDirty(active)) {
+        pendingNavTarget = section;
+        pendingNavType = navType || 'expand';
+        document.getElementById('navConfirmOverlay').classList.add('active');
+        return;
+      }
+      doExpandSection(section);
+    }
+
+    function doExpandSection(section) {
       var el = getSectionEl(section);
       if (!el) return;
-      // 항상 다른 섹션 닫기
       allSections.forEach(function(s) {
         if (s !== section) collapseSection(s);
       });
@@ -1324,6 +1694,11 @@
       takeSnapshot(section);
     }
 
+    // 이전 호환용 — 내부에서 직접 호출 시 가드 없이 열기
+    function expandSection(section) {
+      doExpandSection(section);
+    }
+
     function collapseSection(section) {
       var el = getSectionEl(section);
       if (!el) return;
@@ -1331,6 +1706,86 @@
       var btnId = 'btnSave' + section.charAt(0).toUpperCase() + section.slice(1);
       var btn = document.getElementById(btnId);
       if (btn) btn.disabled = true;
+    }
+
+    // ── 네비게이션 확인 모달 핸들러 ──
+    function navConfirmSaveAndGo() {
+      document.getElementById('navConfirmOverlay').classList.remove('active');
+      var active = getActiveSection();
+      if (active) {
+        // 저장 실행 후 이동
+        var origPendingTarget = pendingNavTarget;
+        var origPendingType = pendingNavType;
+        saveSection(active);
+        // saveSection은 비동기이므로 약간의 지연 후 이동
+        setTimeout(function() {
+          if (origPendingType === 'ai') {
+            doExpandSection(origPendingTarget);
+            showAiModalDirect(origPendingTarget);
+          } else {
+            doExpandSection(origPendingTarget);
+          }
+          pendingNavTarget = null;
+          pendingNavType = null;
+        }, 300);
+      }
+    }
+
+    function navConfirmDiscardAndGo() {
+      document.getElementById('navConfirmOverlay').classList.remove('active');
+      var target = pendingNavTarget;
+      var type = pendingNavType;
+      // 스냅샷 복원 (변경 취소)
+      var active = getActiveSection();
+      if (active) {
+        var tid = getTextareaId(active);
+        if (tid) document.getElementById(tid).value = savedSnapshots[active];
+      }
+      if (type === 'ai') {
+        doExpandSection(target);
+        showAiModalDirect(target);
+      } else {
+        doExpandSection(target);
+      }
+      pendingNavTarget = null;
+      pendingNavType = null;
+    }
+
+    function navConfirmCancel() {
+      document.getElementById('navConfirmOverlay').classList.remove('active');
+      pendingNavTarget = null;
+      pendingNavType = null;
+    }
+
+    // ── Close 버튼 핸들러 ──
+    var pendingCloseSection = null;
+
+    function closeSectionBtn(section) {
+      var el = getSectionEl(section);
+      if (!el || !el.classList.contains('active')) return;
+
+      if (isSectionDirty(section)) {
+        pendingCloseSection = section;
+        document.getElementById('closeConfirmOverlay').classList.add('active');
+        return;
+      }
+      collapseSection(section);
+    }
+
+    function closeConfirmYes() {
+      document.getElementById('closeConfirmOverlay').classList.remove('active');
+      if (pendingCloseSection) {
+        // 변경 취소 — 스냅샷 복원
+        var tid = getTextareaId(pendingCloseSection);
+        if (tid) document.getElementById(tid).value = savedSnapshots[pendingCloseSection];
+        collapseSection(pendingCloseSection);
+        pendingCloseSection = null;
+      }
+    }
+
+    function closeConfirmCancel() {
+      document.getElementById('closeConfirmOverlay').classList.remove('active');
+      pendingCloseSection = null;
     }
 
     // ── saveModal stub functions (sections are now independent, modal unused) ──
@@ -1604,7 +2059,7 @@
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 12, val1: val1, col2: 13, val2: textVal })
+          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 11, val1: val1, col2: 12, val2: textVal })
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
@@ -1645,7 +2100,7 @@
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 14, val1: val1, col2: 15, val2: textVal })
+          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 13, val1: val1, col2: 14, val2: textVal })
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
@@ -1683,7 +2138,7 @@
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 16, val1: val1, col2: 17, val2: textVal })
+          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 15, val1: val1, col2: 16, val2: textVal })
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
@@ -1714,7 +2169,7 @@
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 18, val1: val1, col2: 19, val2: textVal })
+          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 17, val1: val1, col2: 18, val2: textVal })
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
@@ -1741,7 +2196,7 @@
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'saveField', row: currentRow, col: 10, value: meaningVal })
+          body: JSON.stringify({ action: 'saveField', row: currentRow, col: 19, value: meaningVal })
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
@@ -2571,7 +3026,7 @@
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'saveField', row: currentRow, col: 10, value: newVal })
+          body: JSON.stringify({ action: 'saveField', row: currentRow, col: 19, value: newVal })
         }).then(function(r) { return r.json(); }).then(function(res) {
           if (!res.success) showAlertModal('의미 저장 실패: ' + (res.message || ''));
         }).catch(function() {
@@ -3002,6 +3457,14 @@
 
     // ── 페이지 로드 시 전체 데이터 불러오기 ──
     window.addEventListener('DOMContentLoaded', function() {
+      // Drive/Sheet 버튼 접근 제어: nicobass5735@gmail.com 만 활성화
+      var currentUserEmail = sessionStorage.getItem('userEmail') || '';
+      if (currentUserEmail !== 'nicobass5735@gmail.com') {
+        var driveBtn = document.getElementById('btnDrive');
+        var sheetBtn = document.getElementById('btnSheet');
+        if (driveBtn) { driveBtn.disabled = true; driveBtn.style.opacity = '0.45'; driveBtn.style.pointerEvents = 'none'; }
+        if (sheetBtn) { sheetBtn.disabled = true; sheetBtn.style.opacity = '0.45'; sheetBtn.style.pointerEvents = 'none'; }
+      }
       loadAllData();
       alignNavButtons();
       setTimeout(alignNavButtons, 100);
