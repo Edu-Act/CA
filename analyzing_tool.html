@@ -479,30 +479,81 @@
 
     /* ── Inline dropdown + add button ── */
     .inline-dropdown-group {
-      display: inline-flex; align-items: center; gap: 6px; margin-left: 8px;
+      display: inline-flex; align-items: center; gap: 5px; margin-left: 8px;
     }
     .inline-dropdown-group select {
-      font-size: 13px; padding: 3px 8px; border: 1px solid #bbb; border-radius: 4px;
-      background: #fff; cursor: pointer; min-width: 120px;
+      font-size: 12px; padding: 4px 24px 4px 10px; border: 1.5px solid #ccc; border-radius: 16px;
+      background: #fff; cursor: pointer; min-width: 110px;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-weight: 500; color: #444; letter-spacing: -0.2px;
+    }
+    .inline-dropdown-group select:focus {
+      outline: none; border-color: #4a7cdf; box-shadow: 0 0 0 2px rgba(74,124,223,0.15);
     }
     .inline-dropdown-group .add-btn {
-      width: 26px; height: 26px; border: 1px solid #aaa; border-radius: 4px;
-      background: #f8f8f8; cursor: pointer; font-size: 15px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center; color: #555;
-      position: relative;
+      width: 24px; height: 24px; border: 1.5px solid #ccc; border-radius: 50%;
+      background: #fff; cursor: pointer; font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; color: #888;
+      position: relative; transition: all 0.2s;
     }
-    .inline-dropdown-group .add-btn:hover { background: #eee; }
+    .inline-dropdown-group .add-btn:hover { background: #f0f0f0; color: #555; border-color: #aaa; }
+
+    /* 섹션별 드롭다운 색상 */
+    .section-categories .inline-dropdown-group select {
+      border-color: #e8a0b0; background-color: #fff8f9;
+    }
+    .section-categories .inline-dropdown-group select:focus {
+      border-color: #d4738b; box-shadow: 0 0 0 2px rgba(212,115,139,0.15);
+    }
+    .section-categories .inline-dropdown-group .add-btn {
+      border-color: #e8a0b0; color: #c06080;
+    }
+    .section-categories .inline-dropdown-group .add-btn:hover {
+      background: #fef0f3; border-color: #d4738b;
+    }
+
+    .section-sufficient .inline-dropdown-group select {
+      border-color: #90b8e0; background-color: #f6faff;
+    }
+    .section-sufficient .inline-dropdown-group select:focus {
+      border-color: #5a9bd5; box-shadow: 0 0 0 2px rgba(90,155,213,0.15);
+    }
+    .section-sufficient .inline-dropdown-group .add-btn {
+      border-color: #90b8e0; color: #5a9bd5;
+    }
+    .section-sufficient .inline-dropdown-group .add-btn:hover {
+      background: #e3f2fd; border-color: #5a9bd5;
+    }
+
+    .section-functioning .inline-dropdown-group select {
+      border-color: #8cc09a; background-color: #f6fbf7;
+    }
+    .section-functioning .inline-dropdown-group select:focus {
+      border-color: #5a9e6e; box-shadow: 0 0 0 2px rgba(90,158,110,0.15);
+    }
+    .section-functioning .inline-dropdown-group .add-btn {
+      border-color: #8cc09a; color: #5a9e6e;
+    }
+    .section-functioning .inline-dropdown-group .add-btn:hover {
+      background: #e8f5e9; border-color: #5a9e6e;
+    }
     .add-popover {
-      display: none; position: absolute; top: 32px; left: 0; z-index: 100;
-      background: #fff; border: 1px solid #ddd; border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 12px; min-width: 220px;
+      display: none; position: absolute; top: 30px; left: -60px; z-index: 100;
+      background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12); padding: 14px 16px; min-width: 220px;
     }
     .add-popover.show { display: block; }
-    .add-popover p { font-size: 12px; color: #666; margin-bottom: 8px; }
-    .add-popover input { width: 100%; font-size: 13px; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 8px; }
+    .add-popover p { font-size: 12px; color: #888; margin-bottom: 8px; font-weight: 500; }
+    .add-popover input { width: 100%; font-size: 13px; padding: 7px 10px; border: 1.5px solid #ddd; border-radius: 8px; margin-bottom: 10px; transition: border-color 0.2s; }
+    .add-popover input:focus { outline: none; border-color: #4a7cdf; }
     .add-popover .popover-buttons { display: flex; gap: 6px; justify-content: flex-end; }
-    .add-popover .pop-cancel { font-size: 12px; padding: 4px 10px; border: 1px solid #ccc; border-radius: 4px; background: #f5f5f5; cursor: pointer; }
-    .add-popover .pop-confirm { font-size: 12px; padding: 4px 10px; border: none; border-radius: 4px; background: #4a7cdf; color: #fff; cursor: pointer; }
+    .add-popover .pop-cancel { font-size: 12px; padding: 5px 12px; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; cursor: pointer; color: #666; transition: background 0.15s; }
+    .add-popover .pop-cancel:hover { background: #f0f0f0; }
+    .add-popover .pop-confirm { font-size: 12px; padding: 5px 12px; border: none; border-radius: 6px; background: #4a7cdf; color: #fff; cursor: pointer; font-weight: 500; transition: background 0.15s; }
+    .add-popover .pop-confirm:hover { background: #3a6ccf; }
 
     /* ── Header checkbox items (카테고리) ── */
     .header-check-items {
