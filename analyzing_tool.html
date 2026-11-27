@@ -381,7 +381,7 @@
     .expand-section {
       border: 1px solid #ddd;
       border-radius: 8px;
-      overflow: hidden;
+      overflow: visible;
       transition: box-shadow 0.2s;
     }
 
@@ -440,7 +440,9 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      white-space: nowrap;
+      white-space: normal;
+      min-width: 0;
+      overflow: visible;
     }
 
     .expand-header .header-save {
@@ -452,6 +454,7 @@
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.35s ease;
+      border-radius: 0 0 8px 8px;
     }
 
     .expand-section.active .expand-body {
@@ -469,11 +472,43 @@
     .section-sufficient .expand-header { background: #e3f2fd; }
     .section-sufficient.active .expand-header { background: #bbdefb; }
 
+    .section-functioning .expand-header { background: #e8f5e9; }
+    .section-functioning.active .expand-header { background: #c8e6c9; }
+
+
+
+    /* ── Inline dropdown + add button ── */
+    .inline-dropdown-group {
+      display: inline-flex; align-items: center; gap: 6px; margin-left: 8px;
+    }
+    .inline-dropdown-group select {
+      font-size: 13px; padding: 3px 8px; border: 1px solid #bbb; border-radius: 4px;
+      background: #fff; cursor: pointer; min-width: 120px;
+    }
+    .inline-dropdown-group .add-btn {
+      width: 26px; height: 26px; border: 1px solid #aaa; border-radius: 4px;
+      background: #f8f8f8; cursor: pointer; font-size: 15px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; color: #555;
+      position: relative;
+    }
+    .inline-dropdown-group .add-btn:hover { background: #eee; }
+    .add-popover {
+      display: none; position: absolute; top: 32px; left: 0; z-index: 100;
+      background: #fff; border: 1px solid #ddd; border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 12px; min-width: 220px;
+    }
+    .add-popover.show { display: block; }
+    .add-popover p { font-size: 12px; color: #666; margin-bottom: 8px; }
+    .add-popover input { width: 100%; font-size: 13px; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 8px; }
+    .add-popover .popover-buttons { display: flex; gap: 6px; justify-content: flex-end; }
+    .add-popover .pop-cancel { font-size: 12px; padding: 4px 10px; border: 1px solid #ccc; border-radius: 4px; background: #f5f5f5; cursor: pointer; }
+    .add-popover .pop-confirm { font-size: 12px; padding: 4px 10px; border: none; border-radius: 4px; background: #4a7cdf; color: #fff; cursor: pointer; }
+
     /* ── Header checkbox items (카테고리) ── */
     .header-check-items {
       display: flex;
       gap: calc(10px + 1em);
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
       align-items: center;
     }
 
@@ -485,6 +520,10 @@
       font-weight: 500;
       cursor: pointer;
       white-space: nowrap;
+    }
+
+    .header-check-items label:first-child {
+      min-width: 110px;
     }
 
     .header-check-items input[type="radio"] {
@@ -937,87 +976,119 @@
       <!-- 의미 칩이 상단 col-labels로 이동됨, 히든 필드로 값 유지 -->
       <input type="hidden" id="topNoteField" />
 
-      <!-- ① 무근거 혹은 불충분 근거 -->
-      <div class="expand-section section-noevidence" id="sectionNoEvidence">
-        <div class="expand-header">
-          <input type="radio" name="sectionRadio" id="chkNoEvidence" onclick="onRadioClick(event, 'noevidence')" />
-          <div class="header-content">
-            <label for="chkNoEvidence" style="cursor:pointer;">교육과 교육학의 혼동</label><span class="section-check" id="checkNoEvidence">✓</span>
-          </div>
-          <button class="btn btn-save-section header-save" id="btnSaveNoEvidence" onclick="saveSection('noevidence')" disabled>Save</button>
-        </div>
-        <div class="expand-body">
-          <textarea class="form-textarea textarea-tall" id="mColField" placeholder="판정 근거를 입력하세요..."></textarea>
-        </div>
-      </div>
-
-      <!-- ② 관습적 ~ 기타 -->
-      <div class="expand-section section-categories" id="sectionCategories">
-        <div class="expand-header">
+      <!-- ① 교육≠교육학 / 교육=교육학 (L열, M열) -->
+      <div class="expand-section section-noevidence" id="sectionConfusing">
+        <div class="expand-header" onclick="toggleSectionExpand('confusing')">
           <div class="header-content">
             <div class="header-check-items">
-              <label><input type="radio" name="sectionRadio" id="chk1" onclick="onRadioClick(event, 'cat')" /> 관습 추종<span class="section-check" id="checkCat1">✓</span></label>
-              <label><input type="radio" name="sectionRadio" id="chk2" onclick="onRadioClick(event, 'cat')" /> 외래학문<span class="section-check" id="checkCat2">✓</span></label>
-              <label><input type="radio" name="sectionRadio" id="chk3" onclick="onRadioClick(event, 'cat')" /> 결과위주<span class="section-check" id="checkCat3">✓</span></label>
-              <label><input type="radio" name="sectionRadio" id="chk5" onclick="onRadioClick(event, 'cat')" /> 기타<span class="section-check" id="checkCat5">✓</span></label>
+              <label onclick="event.stopPropagation();"><input type="radio" name="confusingRadio" id="radioConfNeq" value="교육≠교육학" onclick="expandSection('confusing');" /> 교육≠교육학</label>
+              <label onclick="event.stopPropagation();"><input type="radio" name="confusingRadio" id="radioConfEq" value="교육=교육학" onclick="expandSection('confusing');" /> 교육=교육학</label>
+              <span class="section-check" id="checkConfusing">✓</span>
             </div>
           </div>
-          <button class="btn btn-save-section header-save" id="btnSaveCategories" onclick="saveSection('categories')" disabled>Save</button>
+          <button class="btn btn-save-section header-save" id="btnSaveConfusing" onclick="event.stopPropagation(); saveSection('confusing');" disabled>Save</button>
         </div>
         <div class="expand-body">
-          <textarea class="form-textarea textarea-tall" id="analysisField" placeholder="판정 근거를 입력하세요..."></textarea>
-          <div class="cat-row">
-            <div class="cat-group" id="catGroup1">
-              <select id="cat1"><option>1차 분류</option></select>
-              <button class="cat-add-btn" onclick="addCatOption('cat1')">+</button>
-              <div class="cat-popover" id="catPopover1">
-                <p>새로운 1차 분류명 입력</p>
-                <input type="text" id="catPopInput1" placeholder="분류명을 입력하세요..." />
-                <div class="popover-buttons">
-                  <button class="pop-cancel" onclick="closePopover('cat1')">취소</button>
-                  <button class="pop-confirm" onclick="confirmPopover('cat1')">추가</button>
-                </div>
-              </div>
-            </div>
-            <div class="cat-group" id="catGroup2">
-              <select id="cat2"><option>2차 분류</option></select>
-              <button class="cat-add-btn" onclick="addCatOption('cat2')">+</button>
-              <div class="cat-popover" id="catPopover2">
-                <p>새로운 2차 분류명 입력</p>
-                <input type="text" id="catPopInput2" placeholder="분류명을 입력하세요..." />
-                <div class="popover-buttons">
-                  <button class="pop-cancel" onclick="closePopover('cat2')">취소</button>
-                  <button class="pop-confirm" onclick="confirmPopover('cat2')">추가</button>
-                </div>
-              </div>
-            </div>
-            <div class="cat-group" id="catGroup3">
-              <select id="cat3"><option>3차 분류</option></select>
-              <button class="cat-add-btn" onclick="addCatOption('cat3')">+</button>
-              <div class="cat-popover" id="catPopover3">
-                <p>새로운 3차 분류명 입력</p>
-                <input type="text" id="catPopInput3" placeholder="분류명을 입력하세요..." />
-                <div class="popover-buttons">
-                  <button class="pop-cancel" onclick="closePopover('cat3')">취소</button>
-                  <button class="pop-confirm" onclick="confirmPopover('cat3')">추가</button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <textarea class="form-textarea textarea-tall" id="confusingTextField" placeholder="판정 근거를 입력하세요..."></textarea>
         </div>
       </div>
 
-      <!-- ③ 충분 혹은 양호 -->
-      <div class="expand-section section-sufficient" id="sectionSufficient">
-        <div class="expand-header">
-          <input type="radio" name="sectionRadio" id="chkSufficient" onclick="onRadioClick(event, 'sufficient')" />
+      <!-- ② 제도 기반 / 제도 무관 (N열, O열) -->
+      <div class="expand-section section-categories" id="sectionInstitutional">
+        <div class="expand-header" onclick="toggleSectionExpand('institutional')">
           <div class="header-content">
-            <label for="chkSufficient" style="cursor:pointer;">충분 혹은 양호</label><span class="section-check" id="checkSufficient">✓</span>
+            <div class="header-check-items">
+              <label onclick="event.stopPropagation();">
+                <input type="radio" name="institutionalRadio" id="radioInstBasis" value="제도 기반" onclick="onInstitutionalChange('basis');" /> 제도 기반
+                <span class="inline-dropdown-group" id="instBasisDropdownGroup" style="display:none;">
+                  <select id="instBasisDropdown">
+                    <option value="" disabled selected>선택</option>
+                    <option value="학교 사태">학교 사태</option>
+                    <option value="학교외 기관 사태">학교외 기관 사태</option>
+                  </select>
+                </span>
+              </label>
+              <label onclick="event.stopPropagation();">
+                <input type="radio" name="institutionalRadio" id="radioInstNone" value="제도 무관" onclick="onInstitutionalChange('none');" /> 제도 무관
+                <span class="inline-dropdown-group" id="instNoneDropdownGroup" style="display:none;">
+                  <select id="instNoneDropdown">
+                    <option value="" disabled selected>선택</option>
+                    <option value="제도 배제">제도 배제</option>
+                    <option value="제도 포괄">제도 포괄</option>
+                  </select>
+                </span>
+              </label>
+              <span class="section-check" id="checkInstitutional">✓</span>
+            </div>
           </div>
-          <button class="btn btn-save-section header-save" id="btnSaveSufficient" onclick="saveSection('sufficient')" disabled>Save</button>
+          <button class="btn btn-save-section header-save" id="btnSaveInstitutional" onclick="event.stopPropagation(); saveSection('institutional');" disabled>Save</button>
         </div>
         <div class="expand-body">
-          <textarea class="form-textarea textarea-tall" id="anColField" placeholder="판정 근거를 입력하세요..."></textarea>
+          <textarea class="form-textarea textarea-tall" id="institutionalTextField" placeholder="판정 근거를 입력하세요..."></textarea>
+        </div>
+      </div>
+
+      <!-- ③ 상식 참조 / 학적 지식 참조 (P열, Q열) -->
+      <div class="expand-section section-sufficient" id="sectionReferencing">
+        <div class="expand-header" onclick="toggleSectionExpand('referencing')">
+          <div class="header-content">
+            <div class="header-check-items">
+              <label onclick="event.stopPropagation();"><input type="radio" name="referencingRadio" id="radioRefCommon" value="상식 참조" onclick="onReferencingChange('common');" /> 상식 참조</label>
+              <label onclick="event.stopPropagation();">
+                <input type="radio" name="referencingRadio" id="radioRefAcademic" value="학적 지식 참조" onclick="onReferencingChange('academic');" /> 학적 지식 참조
+                <span class="inline-dropdown-group" id="refDropdownGroup" style="display:none;">
+                  <select id="refDropdown"><option value="" disabled selected>참조 분과 선택</option></select>
+                  <span class="add-btn" onclick="event.stopPropagation(); showAddPopover('ref');">+
+                    <div class="add-popover" id="addPopoverRef">
+                      <p>새로운 참조 분과 입력</p>
+                      <input type="text" id="addPopInputRef" placeholder="분과학문명을 입력하세요..." onclick="event.stopPropagation();" />
+                      <div class="popover-buttons">
+                        <button class="pop-cancel" onclick="event.stopPropagation(); hideAddPopover('ref');">취소</button>
+                        <button class="pop-confirm" onclick="event.stopPropagation(); confirmAddPopover('ref');">추가</button>
+                      </div>
+                    </div>
+                  </span>
+                </span>
+              </label>
+              <span class="section-check" id="checkReferencing">✓</span>
+            </div>
+          </div>
+          <button class="btn btn-save-section header-save" id="btnSaveReferencing" onclick="event.stopPropagation(); saveSection('referencing');" disabled>Save</button>
+        </div>
+        <div class="expand-body">
+          <textarea class="form-textarea textarea-tall" id="referencingTextField" placeholder="판정 근거를 입력하세요..."></textarea>
+        </div>
+      </div>
+
+      <!-- ④ 기대 결과 혹은 기능 (R열, S열) -->
+      <div class="expand-section section-functioning" id="sectionFunctioning">
+        <div class="expand-header" onclick="toggleSectionExpand('functioning')">
+          <div class="header-content">
+            <div class="header-check-items">
+              <label onclick="event.stopPropagation();">
+                <input type="radio" name="functioningRadio" id="radioFunc" value="functioning" onclick="onFunctioningChange();" />
+                기대 결과 혹은 기능
+                <span class="inline-dropdown-group" id="funcDropdownGroup" style="display:none;">
+                  → <select id="funcDropdown"><option value="" disabled selected>결과 혹은 기능 선택</option></select>
+                  <span class="add-btn" onclick="event.stopPropagation(); showAddPopover('func');">+
+                    <div class="add-popover" id="addPopoverFunc">
+                      <p>새로운 결과/기능 항목 입력</p>
+                      <input type="text" id="addPopInputFunc" placeholder="항목명을 입력하세요..." onclick="event.stopPropagation();" />
+                      <div class="popover-buttons">
+                        <button class="pop-cancel" onclick="event.stopPropagation(); hideAddPopover('func');">취소</button>
+                        <button class="pop-confirm" onclick="event.stopPropagation(); confirmAddPopover('func');">추가</button>
+                      </div>
+                    </div>
+                  </span>
+                </span>
+              </label>
+              <span class="section-check" id="checkFunctioning">✓</span>
+            </div>
+          </div>
+          <button class="btn btn-save-section header-save" id="btnSaveFunctioning" onclick="event.stopPropagation(); saveSection('functioning');" disabled>Save</button>
+        </div>
+        <div class="expand-body">
+          <textarea class="form-textarea textarea-tall" id="functioningTextField" placeholder="판정 근거를 입력하세요..."></textarea>
         </div>
       </div>
 
@@ -1137,254 +1208,206 @@
       }
     })();
 
-    const catRadioIds = ['chk1','chk2','chk3','chk5'];
-
-    // ── 현재 활성 섹션 & 저장된 상태 추적 ──
-    let activeSection = null; // 'noevidence' | 'cat' | 'sufficient' | null
+    // ── 각 섹션의 저장된 상태 (독립 섹션) ──
     let savedSnapshots = {
-      noevidence: '',
-      cat: '',
-      sufficient: ''
+      confusing: '',
+      institutional: '',
+      referencing: '',
+      functioning: ''
     };
 
-    // 현재 활성 섹션의 텍스트 영역 ID
     function getTextareaId(section) {
-      if (section === 'noevidence') return 'mColField';
-      if (section === 'cat') return 'analysisField';
-      if (section === 'sufficient') return 'anColField';
+      if (section === 'confusing') return 'confusingTextField';
+      if (section === 'institutional') return 'institutionalTextField';
+      if (section === 'referencing') return 'referencingTextField';
+      if (section === 'functioning') return 'functioningTextField';
       return null;
     }
 
-    // 현재 섹션이 수정되었는지 확인
     function isSectionDirty(section) {
       if (!section) return false;
-      const tid = getTextareaId(section);
+      var tid = getTextareaId(section);
       if (!tid) return false;
       return document.getElementById(tid).value !== savedSnapshots[section];
     }
 
-    // 스냅샷 저장 (현재 상태를 "깨끗한" 상태로 기록)
     function takeSnapshot(section) {
       if (!section) return;
-      const tid = getTextareaId(section);
+      var tid = getTextareaId(section);
       if (tid) savedSnapshots[section] = document.getElementById(tid).value;
     }
 
-    // ── 모달 관련 ──
-    let pendingTarget = null; // 이동 대기 중인 타겟 섹션
-    let pendingAction = null; // 'switch' | 'deselect'
-
-    function showModal(targetSection) {
-      pendingTarget = targetSection;
-      pendingAction = 'switch';
-      document.getElementById('saveModal').classList.add('show');
-    }
-
-    function modalStay() {
-      // 선택 취소: 모달 닫고 현재 상태 유지 (라디오를 원래대로 복원)
-      document.getElementById('saveModal').classList.remove('show');
-      if (lastCheckedRadioId) {
-        document.getElementById(lastCheckedRadioId).checked = true;
-      }
-      pendingTarget = null;
-      pendingAction = null;
-    }
-
-    function modalCancel() {
-      document.getElementById('saveModal').classList.remove('show');
-      // 수정 내용을 이전 상태로 복원
-      if (activeSection) {
-        const tid = getTextareaId(activeSection);
-        if (tid) {
-          document.getElementById(tid).value = savedSnapshots[activeSection];
-        }
-      }
-      if (pendingAction === 'deselect') {
-        completeDeselect();
-      } else if (pendingAction === 'cat-switch') {
-        // cat 내부 전환: 라디오만 변경, 섹션 유지
-        const targetRadio = document.getElementById(pendingTarget);
-        if (targetRadio) targetRadio.checked = true;
-        lastCheckedRadioId = pendingTarget;
-        loadCatData();
-        takeSnapshot('cat');
+    // ── 섹션 토글 (독립적 확장/축소) ──
+    function toggleSectionExpand(section) {
+      var sectionEl = getSectionEl(section);
+      if (!sectionEl) return;
+      if (sectionEl.classList.contains('active')) {
+        collapseSection(section);
       } else {
-        completeSwitch(pendingTarget);
+        expandSection(section);
       }
-      pendingTarget = null;
-      pendingAction = null;
     }
 
-    function modalSave() {
-      document.getElementById('saveModal').classList.remove('show');
-      saveSection(activeSection);
-      if (pendingAction === 'deselect') {
-        completeDeselect();
-      } else if (pendingAction === 'cat-switch') {
-        // cat 내부 전환: 저장 후 라디오만 변경, 섹션 유지
-        const targetRadio = document.getElementById(pendingTarget);
-        if (targetRadio) targetRadio.checked = true;
-        lastCheckedRadioId = pendingTarget;
-        loadCatData();
-        takeSnapshot('cat');
+    function getSectionEl(section) {
+      if (section === 'confusing') return document.getElementById('sectionConfusing');
+      if (section === 'institutional') return document.getElementById('sectionInstitutional');
+      if (section === 'referencing') return document.getElementById('sectionReferencing');
+      if (section === 'functioning') return document.getElementById('sectionFunctioning');
+      return null;
+    }
+
+    var allSections = ['confusing','institutional','referencing','functioning'];
+
+    function expandSection(section) {
+      var el = getSectionEl(section);
+      if (!el) return;
+      // 항상 다른 섹션 닫기
+      allSections.forEach(function(s) {
+        if (s !== section) collapseSection(s);
+      });
+      if (el.classList.contains('active')) return;
+      el.classList.add('active');
+      var btnId = 'btnSave' + section.charAt(0).toUpperCase() + section.slice(1);
+      var btn = document.getElementById(btnId);
+      if (btn) btn.disabled = false;
+      takeSnapshot(section);
+    }
+
+    function collapseSection(section) {
+      var el = getSectionEl(section);
+      if (!el) return;
+      el.classList.remove('active');
+      var btnId = 'btnSave' + section.charAt(0).toUpperCase() + section.slice(1);
+      var btn = document.getElementById(btnId);
+      if (btn) btn.disabled = true;
+    }
+
+    // ── saveModal stub functions (sections are now independent, modal unused) ──
+    function modalStay() { document.getElementById('saveModal').classList.remove('show'); }
+    function modalCancel() { document.getElementById('saveModal').classList.remove('show'); }
+    function modalSave() { document.getElementById('saveModal').classList.remove('show'); }
+
+    // ── Section 2: 제도 기반/무관 → 드롭다운 표시 ──
+    function onInstitutionalChange(type) {
+      expandSection('institutional');
+      var basisGroup = document.getElementById('instBasisDropdownGroup');
+      var noneGroup = document.getElementById('instNoneDropdownGroup');
+      if (type === 'basis') {
+        basisGroup.style.display = '';
+        noneGroup.style.display = 'none';
+        document.getElementById('instNoneDropdown').selectedIndex = 0;
       } else {
-        completeSwitch(pendingTarget);
+        basisGroup.style.display = 'none';
+        noneGroup.style.display = '';
+        document.getElementById('instBasisDropdown').selectedIndex = 0;
       }
-      pendingTarget = null;
-      pendingAction = null;
     }
 
-    // ── 마지막 체크된 라디오 ID 추적 (cat 내부 전환 감지용) ──
-    let lastCheckedRadioId = null;
-
-    // ── 라디오 클릭 핸들러 (해제 지원) ──
-    function onRadioClick(event, targetSection) {
-      const radio = event.target;
-
-      // 같은 섹션 내에서의 클릭
-      if (activeSection === targetSection) {
-        // 같은 라디오를 다시 클릭 → 해제 시도
-        if (radio.id === lastCheckedRadioId) {
-          if (isSectionDirty(activeSection)) {
-            pendingAction = 'deselect';
-            pendingTarget = null;
-            document.getElementById('saveModal').classList.add('show');
-            return;
-          }
-          setTimeout(function() { completeDeselect(); }, 0);
-          return;
-        }
-        // cat 섹션 내에서 다른 라디오 선택 → dirty면 모달
-        if (isSectionDirty(activeSection)) {
-          event.preventDefault();
-          pendingAction = 'cat-switch';
-          pendingTarget = radio.id;
-          document.getElementById('saveModal').classList.add('show');
-          return;
-        }
-        lastCheckedRadioId = radio.id;
-        loadCatData();
-        takeSnapshot('cat');
-        return;
+    // ── Section 3: 상식/학적 → 드롭다운 표시 ──
+    function onReferencingChange(type) {
+      expandSection('referencing');
+      var ddGroup = document.getElementById('refDropdownGroup');
+      if (type === 'academic') {
+        ddGroup.style.display = '';
+      } else {
+        ddGroup.style.display = 'none';
       }
-
-      // 다른 섹션으로 전환
-      if (activeSection && isSectionDirty(activeSection)) {
-        event.preventDefault();
-        pendingAction = 'switch';
-        showModal(targetSection);
-        return;
-      }
-      completeSwitch(targetSection);
-      lastCheckedRadioId = radio.id;
     }
 
-    // 모든 라디오 해제 & 섹션 닫기
-    function completeDeselect() {
-      const allRadios = document.querySelectorAll('input[name="sectionRadio"]');
-      allRadios.forEach(r => r.checked = false);
-
-      const sectionNoEv = document.getElementById('sectionNoEvidence');
-      const sectionCat = document.getElementById('sectionCategories');
-      const sectionSuf = document.getElementById('sectionSufficient');
-
-      sectionNoEv.classList.remove('active', 'disabled-section');
-      sectionCat.classList.remove('active', 'disabled-section');
-      sectionSuf.classList.remove('active', 'disabled-section');
-
-      document.getElementById('btnSaveNoEvidence').disabled = true;
-      document.getElementById('btnSaveCategories').disabled = true;
-      document.getElementById('btnSaveSufficient').disabled = true;
-
-      activeSection = null;
-      lastCheckedRadioId = null;
+    // ── Section 4: 기대 결과/기능 → 드롭다운 표시 ──
+    function onFunctioningChange() {
+      expandSection('functioning');
+      document.getElementById('funcDropdownGroup').style.display = '';
     }
 
-    // 카테고리 라디오에 따라 해당 열 데이터를 텍스트/드롭다운에 로드
-    function loadCatData() {
-      if (!allRowsCache[dataIndex]) return;
-      var d = allRowsCache[dataIndex];
-      var info = getSelectedCatInfo();
-      if (!info) return;
-
-      var textVal = d[info.textKey] || '';
-      var c1Val = d[info.c1Key] || '';
-      var c2Val = d[info.c2Key] || '';
-      var c3Val = d[info.c3Key] || '';
-
-      document.getElementById('analysisField').value = textVal;
-      // 드롭다운 옵션 로드 후 값 설정
-      populateCatDropdowns();
-      setDropdownValue('cat1', c1Val);
-      setDropdownValue('cat2', c2Val);
-      setDropdownValue('cat3', c3Val);
-    }
-
-    // 드롭다운에 값 설정 (옵션이 없으면 추가)
+    // ── 드롭다운에 값 설정 (옵션이 없으면 추가) ──
     function setDropdownValue(selectId, val) {
       var sel = document.getElementById(selectId);
-      if (!val) { sel.value = ''; return; }
-      // 기존 옵션에서 찾기
+      if (!val) { sel.selectedIndex = 0; return; }
       for (var i = 0; i < sel.options.length; i++) {
         if (sel.options[i].value === val || sel.options[i].textContent === val) {
           sel.selectedIndex = i; return;
         }
       }
-      // 없으면 옵션 추가 후 선택
       var opt = document.createElement('option');
       opt.value = val; opt.textContent = val;
       sel.appendChild(opt);
       sel.value = val;
     }
 
-    function completeSwitch(targetSection) {
-      const sectionNoEv = document.getElementById('sectionNoEvidence');
-      const sectionCat = document.getElementById('sectionCategories');
-      const sectionSuf = document.getElementById('sectionSufficient');
+    // ── 팝오버 (Section 3, 4 에서 항목 추가) ──
+    function showAddPopover(type) {
+      hideAddPopover('ref');
+      hideAddPopover('func');
+      var pop = document.getElementById('addPopover' + type.charAt(0).toUpperCase() + type.slice(1));
+      if (!pop) {
+        pop = document.getElementById('addPopoverRef');
+        if (type === 'func') pop = document.getElementById('addPopoverFunc');
+      }
+      pop.classList.add('show');
+      var input = document.getElementById('addPopInput' + type.charAt(0).toUpperCase() + type.slice(1));
+      if (!input) {
+        input = document.getElementById('addPopInputRef');
+        if (type === 'func') input = document.getElementById('addPopInputFunc');
+      }
+      input.value = '';
+      setTimeout(function() { input.focus(); }, 100);
+    }
 
-      // 모든 섹션 비활성화
-      sectionNoEv.classList.remove('active', 'disabled-section');
-      sectionCat.classList.remove('active', 'disabled-section');
-      sectionSuf.classList.remove('active', 'disabled-section');
+    function hideAddPopover(type) {
+      var pop = document.getElementById('addPopover' + type.charAt(0).toUpperCase() + type.slice(1));
+      if (!pop) {
+        pop = document.getElementById('addPopoverRef');
+        if (type === 'func') pop = document.getElementById('addPopoverFunc');
+      }
+      if (pop) pop.classList.remove('show');
+    }
 
-      // 타겟 섹션 활성화
-      if (targetSection === 'noevidence') {
-        sectionNoEv.classList.add('active');
-        // 교육혼동과 카테고리는 공존 가능 → 카테고리 disabled-section 제거
-        sectionSuf.classList.add('disabled-section');
-        document.getElementById('btnSaveNoEvidence').disabled = false;
-        document.getElementById('btnSaveCategories').disabled = true;
-        document.getElementById('btnSaveSufficient').disabled = true;
-        // M열 값 로드
-        if (allRowsCache[dataIndex]) {
-          var d = allRowsCache[dataIndex];
-          document.getElementById('mColField').value = d.colN || '';
-        }
-      } else if (targetSection === 'cat') {
-        sectionCat.classList.add('active');
-        // 교육혼동과 카테고리는 공존 가능 → 교육혼동 disabled-section 제거
-        sectionSuf.classList.add('disabled-section');
-        document.getElementById('btnSaveNoEvidence').disabled = true;
-        document.getElementById('btnSaveCategories').disabled = false;
-        document.getElementById('btnSaveSufficient').disabled = true;
-        // 선택된 카테고리 라디오에 따라 데이터 로드
-        loadCatData();
-      } else if (targetSection === 'sufficient') {
-        sectionSuf.classList.add('active');
-        sectionNoEv.classList.add('disabled-section');
-        sectionCat.classList.add('disabled-section');
-        document.getElementById('btnSaveNoEvidence').disabled = true;
-        document.getElementById('btnSaveCategories').disabled = true;
-        document.getElementById('btnSaveSufficient').disabled = false;
-        // AJ열 값 로드
-        if (allRowsCache[dataIndex]) {
-          var d = allRowsCache[dataIndex];
-          document.getElementById('anColField').value = d.colAJ || '';
+    function confirmAddPopover(type) {
+      var inputId = type === 'ref' ? 'addPopInputRef' : 'addPopInputFunc';
+      var selectId = type === 'ref' ? 'refDropdown' : 'funcDropdown';
+      var val = document.getElementById(inputId).value.trim();
+      if (!val) { showAlertModal('항목명을 입력해주세요.'); return; }
+      var sel = document.getElementById(selectId);
+      for (var i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === val) {
+          sel.value = val;
+          hideAddPopover(type);
+          return;
         }
       }
+      var opt = document.createElement('option');
+      opt.value = val; opt.textContent = val;
+      sel.appendChild(opt);
+      sel.value = val;
+      hideAddPopover(type);
+    }
 
-      activeSection = targetSection;
-      takeSnapshot(targetSection);
+    // ── 드롭다운 옵션 채우기 (캐시 데이터에서) ──
+    function populateDropdownFromCache(selectId, colKey, defaultLabel, addNone) {
+      var sel = document.getElementById(selectId);
+      var currentVal = sel.value;
+      var vals = {};
+      for (var i = 0; i < allRowsCache.length; i++) {
+        var v = allRowsCache[i][colKey];
+        if (v && String(v).trim() && String(v).trim() !== '상식') vals[String(v).trim()] = true;
+      }
+      var sorted = Object.keys(vals).sort(function(a, b) { return a.localeCompare(b, 'ko'); });
+      sel.innerHTML = '';
+      var defOpt = document.createElement('option');
+      defOpt.value = ''; defOpt.textContent = defaultLabel; defOpt.disabled = true; defOpt.selected = true;
+      sel.appendChild(defOpt);
+      if (addNone) {
+        var noneOpt = document.createElement('option');
+        noneOpt.value = '없음'; noneOpt.textContent = '없음';
+        sel.appendChild(noneOpt);
+      }
+      for (var j = 0; j < sorted.length; j++) {
+        var opt = document.createElement('option');
+        opt.value = sorted[j]; opt.textContent = sorted[j];
+        sel.appendChild(opt);
+      }
+      if (currentVal) setDropdownValue(selectId, currentVal);
     }
 
     // ── 저장 확인 모달 ──
@@ -1395,6 +1418,31 @@
         showAlertModal('저장할 데이터가 선택되지 않았습니다.');
         return;
       }
+
+      // ── Validation (저장 확인 모달보다 먼저) ──
+      if (type === 'confusing') {
+        var selRadio = document.querySelector('input[name="confusingRadio"]:checked');
+        if (!selRadio) { showAlertModal('교육과 교육학과의 혼동 여부를 선택해주세요.'); return; }
+        if (!document.getElementById('confusingTextField').value.trim()) { showAlertModal('텍스트 박스에 사유를 입력해주세요.'); return; }
+      }
+      if (type === 'institutional') {
+        var mainRadio = document.querySelector('input[name="institutionalRadio"]:checked');
+        if (!mainRadio) { showAlertModal('제도와의 관계를 선택해주세요.'); return; }
+        if (mainRadio.value === '제도 기반' && !document.getElementById('instBasisDropdown').value) { showAlertModal('제도와의 관계를 선택해주세요.'); return; }
+        if (mainRadio.value === '제도 무관' && !document.getElementById('instNoneDropdown').value) { showAlertModal('제도와의 관계를 선택해주세요.'); return; }
+        if (!document.getElementById('institutionalTextField').value.trim()) { showAlertModal('텍스트 박스에 사유를 입력해주세요.'); return; }
+      }
+      if (type === 'referencing') {
+        var refRadio = document.querySelector('input[name="referencingRadio"]:checked');
+        if (!refRadio) { showAlertModal('참조 영역을 선택해주세요.'); return; }
+        if (refRadio.value === '학적 지식 참조' && !document.getElementById('refDropdown').value) { showAlertModal('참조된 분과학문 영역을 선택해주세요.'); return; }
+        if (!document.getElementById('referencingTextField').value.trim()) { showAlertModal('텍스트 박스에 사유를 입력해주세요.'); return; }
+      }
+      if (type === 'functioning') {
+        if (!document.getElementById('funcDropdown').value) { showAlertModal('결과 혹은 기능을 선택해주세요.'); return; }
+        if (!document.getElementById('functioningTextField').value.trim()) { showAlertModal('텍스트 박스에 사유를 입력해주세요.'); return; }
+      }
+
       pendingSaveType = type;
 
       var modal = document.getElementById('confirmSaveModal');
@@ -1466,43 +1514,19 @@
       } else {
         checkEl.classList.remove('visible');
       }
-      // label 찾기
-      var label = checkEl.closest('label');
-      if (!label) {
-        // 무근거/충분: check 바로 앞의 label 형제
-        var el = checkEl.previousElementSibling;
-        while (el) {
-          if (el.tagName === 'LABEL') { label = el; break; }
-          el = el.previousElementSibling;
-        }
-      }
-      if (label) {
-        if (visible) { label.style.fontWeight = '800'; }
-        else { label.style.fontWeight = ''; }
-      }
     }
 
-    // 체크 상태에 따라 라디오 버튼 비활성화
-    function updateRadioDisabledState() {
-      var noEvChecked = document.getElementById('checkNoEvidence').classList.contains('visible');
-      var sufChecked = document.getElementById('checkSufficient').classList.contains('visible');
-      var catChecked = ['checkCat1','checkCat2','checkCat3','checkCat5'].some(function(id) {
-        return document.getElementById(id).classList.contains('visible');
-      });
-
-      // 교육혼동 + 카테고리는 공존 가능, 충분과는 상호 배타
-      // 교육혼동 or 카테고리 체크 → 충분 비활성
-      // 충분 체크 → 교육혼동, 카테고리 비활성
-
-      var disableNoEv = sufChecked;
-      var disableSuf = noEvChecked || catChecked;
-      var disableCats = sufChecked;
-
-      document.getElementById('chkNoEvidence').disabled = disableNoEv;
-      document.getElementById('chkSufficient').disabled = disableSuf;
-      ['chk1','chk2','chk3','chk5'].forEach(function(id) {
-        document.getElementById(id).disabled = disableCats;
-      });
+    function persistCache() {
+      try {
+        var storageType = sessionStorage.getItem('dataStorageType');
+        if (storageType === 'local') {
+          localStorage.setItem('allRowsCache', JSON.stringify(allRowsCache));
+        } else {
+          sessionStorage.setItem('allRowsCache', JSON.stringify(allRowsCache));
+        }
+      } catch(e) {
+        try { localStorage.setItem('allRowsCache', JSON.stringify(allRowsCache)); } catch(e2) {}
+      }
     }
 
     function updateResultLabel(colK) {
@@ -1510,160 +1534,154 @@
         var jStr = String(colK);
         if (allRowsCache[dataIndex]) {
           allRowsCache[dataIndex].colK = jStr;
+          persistCache();
         }
         var rl = document.querySelector('.result-label');
         if (rl) rl.textContent = jStr || '';
       }
-      updateResultChipColor();
     }
 
-    // ── Result 칩 색상을 체크된 섹션에 맞춰 변경 ──
-    function updateResultChipColor() {
-      var chip = document.querySelector('.result-label');
-      if (!chip) return;
-
-      var noEvChecked = document.getElementById('checkNoEvidence').classList.contains('visible');
-      var sufChecked = document.getElementById('checkSufficient').classList.contains('visible');
-      var catChecked = ['checkCat1','checkCat2','checkCat3','checkCat5'].some(function(id) {
-        return document.getElementById(id).classList.contains('visible');
-      });
-
-      // 초기화
-      chip.style.background = 'transparent';
-      chip.style.borderColor = '#aab';
-      chip.style.color = '#555';
-
-      if (noEvChecked) {
-        chip.style.background = '#eee';
-        chip.style.borderColor = '#bbb';
-        chip.style.color = '#444';
-      } else if (catChecked) {
-        chip.style.background = '#fce4ec';
-        chip.style.borderColor = '#e8a0b0';
-        chip.style.color = '#7b2a3e';
-      } else if (sufChecked) {
-        chip.style.background = '#bbdefb';
-        chip.style.borderColor = '#7eaddc';
-        chip.style.color = '#1a4a72';
-      }
-    }
-
+    // ── savePair: 모든 섹션의 저장을 통합 처리 ──
     function doSave(type) {
-      if (type === 'noevidence') {
-        var mText = document.getElementById('mColField').value.trim();
-        var colMFlag = mText ? '1' : '0';
-        var colNText = mText || '';
-        var payload = { action: 'saveNoEvidence', row: currentRow, colL: colMFlag, colM: colNText };
-        console.log('[Save noevidence] payload:', JSON.stringify(payload));
-
+      if (type === 'confusing') {
+        // Validation
+        var selRadio = document.querySelector('input[name="confusingRadio"]:checked');
+        if (!selRadio) { showConfirmSaveDone('교육과 교육학과의 혼동 여부를 선택해주세요.'); return; }
+        var textVal = document.getElementById('confusingTextField').value.trim();
+        if (!textVal) { showConfirmSaveDone('텍스트 박스에 사유를 입력해주세요.'); return; }
+        var val1 = selRadio.value; // "교육≠교육학" or "교육=교육학"
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 12, val1: val1, col2: 13, val2: textVal })
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
-            console.log('[Save noevidence] response:', JSON.stringify(res));
             if (res.success) {
-              // 캐시 업데이트
               if (allRowsCache[dataIndex]) {
-                allRowsCache[dataIndex].colM = colMFlag;
-                allRowsCache[dataIndex].colN = colNText;
+                allRowsCache[dataIndex].colL = val1;
+                allRowsCache[dataIndex].colM = textVal;
               }
-              // 체크 표시 업데이트
-              setCheckVisible(document.getElementById('checkNoEvidence'), colMFlag === '1');
-              updateRadioDisabledState();
-              // 결과(K열) 갱신
+              setCheckVisible(document.getElementById('checkConfusing'), true);
               updateResultLabel(res.colK);
-              takeSnapshot('noevidence');
+              persistCache();
+              takeSnapshot('confusing');
               showConfirmSaveDone('저장되었습니다.');
             } else {
               showConfirmSaveDone('저장 실패: ' + (res.message || '알 수 없는 오류'));
             }
           })
-          .catch(function(err) {
-            console.error('[Save noevidence] error:', err);
-            showConfirmSaveDone('저장 중 오류가 발생했습니다: ' + err.message);
-          });
+          .catch(function(err) { showConfirmSaveDone('저장 중 오류가 발생했습니다.'); });
         return;
       }
 
-      if (type === 'sufficient') {
-        var anText = document.getElementById('anColField').value.trim();
-        var colAIFlag = anText ? '1' : '0';
-        var colAJText = anText || '';
-        var payload = { action: 'saveSufficient', row: currentRow, colAI: colAIFlag, colAJ: colAJText };
-        console.log('[Save sufficient] payload:', JSON.stringify(payload));
-
+      if (type === 'institutional') {
+        var mainRadio = document.querySelector('input[name="institutionalRadio"]:checked');
+        if (!mainRadio) { showConfirmSaveDone('제도와의 관계를 선택해주세요.'); return; }
+        // 선택된 라디오에 따라 해당 드롭다운에서 값 가져오기
+        var val1;
+        if (mainRadio.value === '제도 기반') {
+          var dd = document.getElementById('instBasisDropdown');
+          if (!dd.value) { showConfirmSaveDone('제도와의 관계를 선택해주세요.'); return; }
+          val1 = dd.value;
+        } else {
+          var dd = document.getElementById('instNoneDropdown');
+          if (!dd.value) { showConfirmSaveDone('제도와의 관계를 선택해주세요.'); return; }
+          val1 = dd.value;
+        }
+        var textVal = document.getElementById('institutionalTextField').value.trim();
+        if (!textVal) { showConfirmSaveDone('텍스트 박스에 사유를 입력해주세요.'); return; }
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 14, val1: val1, col2: 15, val2: textVal })
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
-            console.log('[Save sufficient] response:', JSON.stringify(res));
             if (res.success) {
               if (allRowsCache[dataIndex]) {
-                allRowsCache[dataIndex].colAI = colAIFlag;
-                allRowsCache[dataIndex].colAJ = colAJText;
+                allRowsCache[dataIndex].colN = val1;
+                allRowsCache[dataIndex].colO = textVal;
               }
-              setCheckVisible(document.getElementById('checkSufficient'), colAIFlag === '1');
-              updateRadioDisabledState();
-              // 결과(K열) 갱신
+              setCheckVisible(document.getElementById('checkInstitutional'), true);
               updateResultLabel(res.colK);
-              takeSnapshot('sufficient');
+              persistCache();
+              takeSnapshot('institutional');
               showConfirmSaveDone('저장되었습니다.');
             } else {
               showConfirmSaveDone('저장 실패: ' + (res.message || '알 수 없는 오류'));
             }
           })
-          .catch(function(err) {
-            console.error('[Save sufficient] error:', err);
-            showConfirmSaveDone('저장 중 오류가 발생했습니다: ' + err.message);
-          });
+          .catch(function(err) { showConfirmSaveDone('저장 중 오류가 발생했습니다.'); });
         return;
       }
 
-      if (type === 'categories') {
-        var info = getSelectedCatInfo();
-        if (!info) { showConfirmSaveDone('카테고리를 선택해주세요.'); return; }
-
-        var textVal = document.getElementById('analysisField').value.trim();
-        var cat1Val = document.getElementById('cat1').value || '';
-        var cat2Val = document.getElementById('cat2').value || '';
-        var cat3Val = document.getElementById('cat3').value || '';
-        var flagVal = textVal ? '1' : '0';
-
+      if (type === 'referencing') {
+        var refRadio = document.querySelector('input[name="referencingRadio"]:checked');
+        if (!refRadio) { showConfirmSaveDone('참조 영역을 선택해주세요.'); return; }
+        var textVal = document.getElementById('referencingTextField').value.trim();
+        if (!textVal) { showConfirmSaveDone('텍스트 박스에 사유를 입력해주세요.'); return; }
+        var val1;
+        if (refRadio.value === '상식 참조') {
+          val1 = '상식';
+        } else {
+          var dd = document.getElementById('refDropdown');
+          if (!dd.value) { showConfirmSaveDone('참조된 분과학문 영역을 선택해주세요.'); return; }
+          val1 = dd.value;
+        }
         fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'saveCategories', row: currentRow, startCol: info.startCol, flagVal: flagVal, textVal: textVal, cat1Val: cat1Val, cat2Val: cat2Val, cat3Val: cat3Val })
+          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 16, val1: val1, col2: 17, val2: textVal })
         })
           .then(function(r) { return r.json(); })
           .then(function(res) {
             if (res.success) {
-              // 캐시 업데이트
               if (allRowsCache[dataIndex]) {
-                allRowsCache[dataIndex][info.flagKey] = flagVal;
-                allRowsCache[dataIndex][info.textKey] = textVal;
-                allRowsCache[dataIndex][info.c1Key] = cat1Val;
-                allRowsCache[dataIndex][info.c2Key] = cat2Val;
-                allRowsCache[dataIndex][info.c3Key] = cat3Val;
+                allRowsCache[dataIndex].colP = val1;
+                allRowsCache[dataIndex].colQ = textVal;
               }
-              // 체크 표시 업데이트
-              setCheckVisible(document.getElementById(info.checkId), flagVal === '1');
-              updateRadioDisabledState();
+              setCheckVisible(document.getElementById('checkReferencing'), true);
               updateResultLabel(res.colK);
-              takeSnapshot('cat');
+              persistCache();
+              takeSnapshot('referencing');
               showConfirmSaveDone('저장되었습니다.');
             } else {
               showConfirmSaveDone('저장 실패: ' + (res.message || '알 수 없는 오류'));
             }
           })
-          .catch(function(err) {
-            showConfirmSaveDone('저장 중 오류가 발생했습니다.');
-          });
+          .catch(function(err) { showConfirmSaveDone('저장 중 오류가 발생했습니다.'); });
+        return;
+      }
+
+      if (type === 'functioning') {
+        var dd = document.getElementById('funcDropdown');
+        if (!dd.value) { showConfirmSaveDone('결과 혹은 기능을 선택해주세요.'); return; }
+        var textVal = document.getElementById('functioningTextField').value.trim();
+        if (!textVal) { showConfirmSaveDone('텍스트 박스에 사유를 입력해주세요.'); return; }
+        var val1 = dd.value;
+        fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'savePair', row: currentRow, col1: 18, val1: val1, col2: 19, val2: textVal })
+        })
+          .then(function(r) { return r.json(); })
+          .then(function(res) {
+            if (res.success) {
+              if (allRowsCache[dataIndex]) {
+                allRowsCache[dataIndex].colR = val1;
+                allRowsCache[dataIndex].colS = textVal;
+              }
+              setCheckVisible(document.getElementById('checkFunctioning'), true);
+              updateResultLabel(res.colK);
+              persistCache();
+              takeSnapshot('functioning');
+              showConfirmSaveDone('저장되었습니다.');
+            } else {
+              showConfirmSaveDone('저장 실패: ' + (res.message || '알 수 없는 오류'));
+            }
+          })
+          .catch(function(err) { showConfirmSaveDone('저장 중 오류가 발생했습니다.'); });
         return;
       }
 
@@ -1741,8 +1759,11 @@
 
     // ── 알림 모달 ──
     function showAlertModal(msg) {
+      var modal = document.getElementById('alertModal');
       document.getElementById('alertModalMsg').textContent = msg;
-      document.getElementById('alertModal').classList.add('show');
+      modal.classList.add('show');
+      var modalBox = modal.querySelector('.modal-box');
+      if (modalBox) positionModalOnFormPanel(modal, modalBox);
     }
     function closeAlertModal() {
       document.getElementById('alertModal').classList.remove('show');
@@ -1886,7 +1907,7 @@
     }
 
     // ── 데이터 캐시 (전체 한 번에 로드) ──
-    var CACHE_VERSION = 'v4_colShift'; // 열 구조 변경: AD-AH 삭제, AI-AO→AD-AJ 이동, 무근거→교육혼동
+    var CACHE_VERSION = 'v5_newStructure'; // K-S열 구조 변경: 4섹션 독립
     let allRowsCache = []; // [{row, colA, colB, colG, colH, colI, colJ, colK, ...}, ...]
     let dataIndex = 0;     // 현재 표시 중인 캐시 인덱스
     let dataLoaded = false;
@@ -1971,47 +1992,98 @@
         }
       }
 
-      // 섹션 초기화
-      completeDeselect();
-      document.getElementById('mColField').value = '';
-      document.getElementById('analysisField').value = '';
-      document.getElementById('anColField').value = '';
+      // ── 섹션 초기화 (독립적 4섹션) ──
+      // 모든 섹션 닫기
+      ['confusing','institutional','referencing','functioning'].forEach(function(sec) {
+        collapseSection(sec);
+      });
+      // 라디오 초기화
+      document.querySelectorAll('input[name="confusingRadio"]').forEach(function(r) { r.checked = false; });
+      document.querySelectorAll('input[name="institutionalRadio"]').forEach(function(r) { r.checked = false; });
+      document.querySelectorAll('input[name="referencingRadio"]').forEach(function(r) { r.checked = false; });
+      document.querySelectorAll('input[name="functioningRadio"]').forEach(function(r) { r.checked = false; });
+      // 하위 그룹 숨기기
+      document.getElementById('instBasisDropdownGroup').style.display = 'none';
+      document.getElementById('instNoneDropdownGroup').style.display = 'none';
+      document.getElementById('refDropdownGroup').style.display = 'none';
+      document.getElementById('funcDropdownGroup').style.display = 'none';
+      // 텍스트 필드 초기화
+      document.getElementById('confusingTextField').value = '';
+      document.getElementById('institutionalTextField').value = '';
+      document.getElementById('referencingTextField').value = '';
+      document.getElementById('functioningTextField').value = '';
       // 드롭다운 초기화
-      document.getElementById('cat1').selectedIndex = 0;
-      document.getElementById('cat2').selectedIndex = 0;
-      document.getElementById('cat3').selectedIndex = 0;
-      savedSnapshots = { noevidence: '', cat: '', sufficient: '' };
+      document.getElementById('instBasisDropdown').selectedIndex = 0;
+      document.getElementById('instNoneDropdown').selectedIndex = 0;
+      document.getElementById('refDropdown').selectedIndex = 0;
+      document.getElementById('funcDropdown').selectedIndex = 0;
+      savedSnapshots = { confusing: '', institutional: '', referencing: '', functioning: '' };
 
       // 체크 표시 초기화
-      setCheckVisible(document.getElementById('checkNoEvidence'), false);
-      setCheckVisible(document.getElementById('checkSufficient'), false);
-      setCheckVisible(document.getElementById('checkCat1'), false);
-      setCheckVisible(document.getElementById('checkCat2'), false);
-      setCheckVisible(document.getElementById('checkCat3'), false);
-      setCheckVisible(document.getElementById('checkCat5'), false);
+      setCheckVisible(document.getElementById('checkConfusing'), false);
+      setCheckVisible(document.getElementById('checkInstitutional'), false);
+      setCheckVisible(document.getElementById('checkReferencing'), false);
+      setCheckVisible(document.getElementById('checkFunctioning'), false);
 
-      // L열 값에 따라 체크 표시만 (섹션 확장 없음)
-      if (d.colM && String(d.colM).trim() === '1') {
-        savedSnapshots.noevidence = d.colN || '';
-        setCheckVisible(document.getElementById('checkNoEvidence'), true);
+      // 드롭다운 옵션 채우기
+      populateDropdownFromCache('refDropdown', 'colP', '참조 분과 선택', false);
+      populateDropdownFromCache('funcDropdown', 'colR', '결과 혹은 기능 선택', true);
+
+      // ── 저장된 데이터가 있으면 라디오/드롭다운 복원 + 체크 표시 ──
+      // Section 1: L열(confusing radio text), M열(textarea)
+      if (d.colL && String(d.colL).trim()) {
+        var colLVal = String(d.colL).trim();
+        document.querySelectorAll('input[name="confusingRadio"]').forEach(function(r) {
+          if (r.value === colLVal) r.checked = true;
+        });
+        document.getElementById('confusingTextField').value = d.colM || '';
+        setCheckVisible(document.getElementById('checkConfusing'), true);
+        savedSnapshots.confusing = d.colM || '';
       }
-
-      // O열(관습 추종), T열(외래학문), Y열(결과위주), AD열(기타)
-      if (d.colO && String(d.colO).trim() === '1') setCheckVisible(document.getElementById('checkCat1'), true);
-      if (d.colT && String(d.colT).trim() === '1') setCheckVisible(document.getElementById('checkCat2'), true);
-      if (d.colY && String(d.colY).trim() === '1') setCheckVisible(document.getElementById('checkCat3'), true);
-      if (d.colAD && String(d.colAD).trim() === '1') setCheckVisible(document.getElementById('checkCat5'), true);
-
-      // AI열 값에 따라 체크 표시만 (섹션 확장 없음)
-      if (d.colAI && String(d.colAI).trim() === '1') {
-        savedSnapshots.sufficient = d.colAJ || '';
-        setCheckVisible(document.getElementById('checkSufficient'), true);
+      // Section 2: N열(institutional dropdown value), O열(textarea)
+      if (d.colN && String(d.colN).trim()) {
+        var colNVal = String(d.colN).trim();
+        // 드롭다운 값으로 어느 라디오인지 판별
+        if (colNVal === '학교 사태' || colNVal === '학교외 기관 사태') {
+          document.getElementById('radioInstBasis').checked = true;
+          document.getElementById('instBasisDropdownGroup').style.display = '';
+          document.getElementById('instNoneDropdownGroup').style.display = 'none';
+          setDropdownValue('instBasisDropdown', colNVal);
+        } else if (colNVal === '제도 배제' || colNVal === '제도 포괄') {
+          document.getElementById('radioInstNone').checked = true;
+          document.getElementById('instNoneDropdownGroup').style.display = '';
+          document.getElementById('instBasisDropdownGroup').style.display = 'none';
+          setDropdownValue('instNoneDropdown', colNVal);
+        }
+        document.getElementById('institutionalTextField').value = d.colO || '';
+        setCheckVisible(document.getElementById('checkInstitutional'), true);
+        savedSnapshots.institutional = d.colO || '';
       }
-
-      // 체크 상태에 따라 라디오 버튼 비활성화 업데이트
-      updateRadioDisabledState();
-      // Result 칩 색상 업데이트
-      updateResultChipColor();
+      // Section 3: P열(referencing), Q열(textarea)
+      if (d.colP && String(d.colP).trim()) {
+        var colPVal = String(d.colP).trim();
+        if (colPVal === '상식') {
+          document.getElementById('radioRefCommon').checked = true;
+          document.getElementById('refDropdownGroup').style.display = 'none';
+        } else {
+          document.getElementById('radioRefAcademic').checked = true;
+          document.getElementById('refDropdownGroup').style.display = '';
+          setDropdownValue('refDropdown', colPVal);
+        }
+        document.getElementById('referencingTextField').value = d.colQ || '';
+        setCheckVisible(document.getElementById('checkReferencing'), true);
+        savedSnapshots.referencing = d.colQ || '';
+      }
+      // Section 4: R열(functioning dropdown value), S열(textarea)
+      if (d.colR && String(d.colR).trim()) {
+        var colRVal = String(d.colR).trim();
+        document.getElementById('radioFunc').checked = true;
+        document.getElementById('funcDropdownGroup').style.display = '';
+        setDropdownValue('funcDropdown', colRVal);
+        document.getElementById('functioningTextField').value = d.colS || '';
+        setCheckVisible(document.getElementById('checkFunctioning'), true);
+        savedSnapshots.functioning = d.colS || '';
+      }
 
       // PDF placeholder 복원
       var panel = document.getElementById('pdfPanel');
@@ -2185,23 +2257,6 @@
         }
       });
 
-      // 드롭다운 "분류 취소" 선택 시 값 초기화
-      ['cat1', 'cat2', 'cat3'].forEach(function(id) {
-        document.getElementById(id).addEventListener('change', function() {
-          if (this.value === '__clear__') {
-            this.selectedIndex = 0;
-          }
-        });
-      });
-
-      // 카테고리 텍스트 박스 비워지면 드롭다운 자동 초기화
-      document.getElementById('analysisField').addEventListener('input', function() {
-        if (!this.value.trim()) {
-          document.getElementById('cat1').value = '';
-          document.getElementById('cat2').value = '';
-          document.getElementById('cat3').value = '';
-        }
-      });
     });
 
     // ── Actions ──
@@ -2671,40 +2726,35 @@
         // 판정 사유
         var reasonsHtml = '';
 
-        // 교육과 교육학의 혼동
-        if (d.colM && String(d.colM).trim() === '1' && d.colN) {
+        // Section 1: 교육≠교육학 / 교육=교육학
+        if (d.colL && String(d.colL).trim()) {
           reasonsHtml += '<div class="print-reason-block">';
-          reasonsHtml += '<div class="print-reason-title">* 교육과 교육학의 혼동 판정 사유</div>';
-          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colN) + '</div>';
+          reasonsHtml += '<div class="print-reason-title">* 혼동 여부: ' + escapeHtml(d.colL) + '</div>';
+          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colM || '') + '</div>';
           reasonsHtml += '</div>';
         }
 
-        // 관습적 ~ 기타 (순서대로)
-        var catItems = [
-          { flag: 'colO', text: 'colP', c1: 'colQ', c2: 'colR', c3: 'colS', name: '관습 추종' },
-          { flag: 'colT', text: 'colU', c1: 'colV', c2: 'colW', c3: 'colX', name: '외래학문' },
-          { flag: 'colY', text: 'colZ', c1: 'colAA', c2: 'colAB', c3: 'colAC', name: '결과위주' },
-          { flag: 'colAD', text: 'colAE', c1: 'colAF', c2: 'colAG', c3: 'colAH', name: '기타' }
-        ];
-        catItems.forEach(function(cat) {
-          if (d[cat.flag] && String(d[cat.flag]).trim() === '1' && d[cat.text]) {
-            // 분류 표시
-            var cats = [d[cat.c1], d[cat.c2], d[cat.c3]].filter(function(v) {
-              return v && String(v).trim() && String(v).trim() !== '1차 분류' && String(v).trim() !== '2차 분류' && String(v).trim() !== '3차 분류';
-            });
-            var catSuffix = cats.length > 0 ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[' + cats.join('] - [') + ']' : '';
-            reasonsHtml += '<div class="print-reason-block">';
-            reasonsHtml += '<div class="print-reason-title">* ' + cat.name + ' 판정 사유' + catSuffix + '</div>';
-            reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d[cat.text]) + '</div>';
-            reasonsHtml += '</div>';
-          }
-        });
-
-        // 충분 혹은 양호
-        if (d.colAI && String(d.colAI).trim() === '1' && d.colAJ) {
+        // Section 2: 제도 관계
+        if (d.colN && String(d.colN).trim()) {
           reasonsHtml += '<div class="print-reason-block">';
-          reasonsHtml += '<div class="print-reason-title">* 충분 혹은 양호 판정 사유</div>';
-          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colAJ) + '</div>';
+          reasonsHtml += '<div class="print-reason-title">* 제도 관계: ' + escapeHtml(d.colN) + '</div>';
+          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colO || '') + '</div>';
+          reasonsHtml += '</div>';
+        }
+
+        // Section 3: 참조 영역
+        if (d.colP && String(d.colP).trim()) {
+          reasonsHtml += '<div class="print-reason-block">';
+          reasonsHtml += '<div class="print-reason-title">* 참조 영역: ' + escapeHtml(d.colP) + '</div>';
+          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colQ || '') + '</div>';
+          reasonsHtml += '</div>';
+        }
+
+        // Section 4: 기대 결과/기능
+        if (d.colR && String(d.colR).trim()) {
+          reasonsHtml += '<div class="print-reason-block">';
+          reasonsHtml += '<div class="print-reason-title">* 결과/기능: ' + escapeHtml(d.colR) + '</div>';
+          reasonsHtml += '<div class="print-reason-text">' + escapeHtml(d.colS || '') + '</div>';
           reasonsHtml += '</div>';
         }
 
@@ -2811,133 +2861,29 @@
     }
 
     function collectFormData() {
+      var confRadio = document.querySelector('input[name="confusingRadio"]:checked');
+      var instRadio = document.querySelector('input[name="institutionalRadio"]:checked');
+      var refRadio = document.querySelector('input[name="referencingRadio"]:checked');
+      var instVal = '';
+      if (instRadio) {
+        instVal = instRadio.value === '제도 기반' ? document.getElementById('instBasisDropdown').value : document.getElementById('instNoneDropdown').value;
+      }
       return {
         row: currentRow,
         apa: document.getElementById('apaDisplay').textContent,
         pdfUrl: document.getElementById('pdfUrlField').value,
-        noEvidence: document.getElementById('chkNoEvidence').checked,
-        mCol: document.getElementById('mColField').value,
-        chk_conventional: document.getElementById('chk1').checked,
-        chk_mercenary: document.getElementById('chk2').checked,
-        chk_functionalist: document.getElementById('chk3').checked,
-        chk_other: document.getElementById('chk5').checked,
-        analysis: document.getElementById('analysisField').value,
-        cat1: document.getElementById('cat1').value,
-        cat2: document.getElementById('cat2').value,
-        cat3: document.getElementById('cat3').value,
-        sufficient: document.getElementById('chkSufficient').checked,
-        anCol: document.getElementById('anColField').value
+        confusing: confRadio ? confRadio.value : '',
+        confusingText: document.getElementById('confusingTextField').value,
+        institutional: instVal,
+        institutionalText: document.getElementById('institutionalTextField').value,
+        referencing: refRadio ? (refRadio.value === '상식 참조' ? '상식' : document.getElementById('refDropdown').value) : '',
+        referencingText: document.getElementById('referencingTextField').value,
+        functioning: document.getElementById('funcDropdown').value,
+        functioningText: document.getElementById('functioningTextField').value
       };
     }
 
-    // ── 선택된 카테고리 라디오 정보 ──
-    function getSelectedCatInfo() {
-      // 라디오ID → {flagCol(시작열), textKey, cat1Key, cat2Key, cat3Key, checkId, startCol}
-      var map = {
-        chk1: { startCol: 15, flagKey:'colO', textKey:'colP', c1Key:'colQ', c2Key:'colR', c3Key:'colS', checkId:'checkCat1' },
-        chk2: { startCol: 20, flagKey:'colT', textKey:'colU', c1Key:'colV', c2Key:'colW', c3Key:'colX', checkId:'checkCat2' },
-        chk3: { startCol: 25, flagKey:'colY', textKey:'colZ', c1Key:'colAA', c2Key:'colAB', c3Key:'colAC', checkId:'checkCat3' },
-        chk5: { startCol: 30, flagKey:'colAD', textKey:'colAE', c1Key:'colAF', c2Key:'colAG', c3Key:'colAH', checkId:'checkCat5' }
-      };
-      for (var id in map) {
-        if (document.getElementById(id).checked) return map[id];
-      }
-      return null;
-    }
-
-    // ── 드롭다운에 해당 열의 고유 값 로드 (오름차순) ──
-    // 기타(chk5) 선택 시 1·2·3차 분류에 기본으로 넣을 항목
-    var etcDefaultItems = ['과학주의', '이현령비현령', '유행사조', '현상-양태 혼동'];
-
-    function populateCatDropdowns() {
-      var info = getSelectedCatInfo();
-      if (!info) return;
-      var isEtc = document.getElementById('chk5').checked;
-      var defaults = isEtc ? etcDefaultItems : null;
-      populateOneDropdown('cat1', info.c1Key, defaults);
-      populateOneDropdown('cat2', info.c2Key, defaults);
-      populateOneDropdown('cat3', info.c3Key, defaults);
-    }
-
-    function populateOneDropdown(selectId, colKey, defaultItems) {
-      var sel = document.getElementById(selectId);
-      var currentVal = sel.value;
-      var defaultLabel = sel === document.getElementById('cat1') ? '1차 분류' :
-                         sel === document.getElementById('cat2') ? '2차 분류' : '3차 분류';
-      // 해당 열의 모든 값 수집 (중복 제거)
-      var vals = {};
-      for (var i = 0; i < allRowsCache.length; i++) {
-        var v = allRowsCache[i][colKey];
-        if (v && String(v).trim()) vals[String(v).trim()] = true;
-      }
-      // 기본 항목 병합
-      if (defaultItems) {
-        for (var di = 0; di < defaultItems.length; di++) {
-          vals[defaultItems[di]] = true;
-        }
-      }
-      var sorted = Object.keys(vals).sort(function(a, b) { return a.localeCompare(b, 'ko'); });
-
-      // 옵션 재구성
-      sel.innerHTML = '';
-      var defOpt = document.createElement('option');
-      defOpt.value = ''; defOpt.textContent = defaultLabel; defOpt.disabled = true; defOpt.selected = true;
-      sel.appendChild(defOpt);
-      var clearOpt = document.createElement('option');
-      clearOpt.value = '__clear__'; clearOpt.textContent = '분류 취소';
-      clearOpt.style.color = '#999';
-      sel.appendChild(clearOpt);
-      for (var j = 0; j < sorted.length; j++) {
-        var opt = document.createElement('option');
-        opt.value = sorted[j]; opt.textContent = sorted[j];
-        sel.appendChild(opt);
-      }
-      // 이전 값 복원
-      if (currentVal) {
-        setDropdownValue(selectId, currentVal);
-      }
-    }
-
-    // ── + 버튼: 분류 추가 팝오버 ──
-    var popoverMap = { cat1: '1', cat2: '2', cat3: '3' };
-
-    function addCatOption(selectId) {
-      // 다른 팝오버 닫기
-      ['cat1','cat2','cat3'].forEach(function(id) {
-        if (id !== selectId) closePopover(id);
-      });
-      var num = popoverMap[selectId];
-      var popover = document.getElementById('catPopover' + num);
-      var input = document.getElementById('catPopInput' + num);
-      input.value = '';
-      popover.classList.add('show');
-      setTimeout(function() { input.focus(); }, 100);
-    }
-
-    function closePopover(selectId) {
-      var num = popoverMap[selectId];
-      document.getElementById('catPopover' + num).classList.remove('show');
-    }
-
-    function confirmPopover(selectId) {
-      var num = popoverMap[selectId];
-      var val = document.getElementById('catPopInput' + num).value.trim();
-      if (!val) { showAlertModal('분류명을 입력해주세요.'); return; }
-      var sel = document.getElementById(selectId);
-      // 중복 체크
-      for (var i = 0; i < sel.options.length; i++) {
-        if (sel.options[i].value === val) {
-          sel.value = val;
-          closePopover(selectId);
-          return;
-        }
-      }
-      var opt = document.createElement('option');
-      opt.value = val; opt.textContent = val;
-      sel.appendChild(opt);
-      sel.value = val;
-      closePopover(selectId);
-    }
+    // (old category helpers removed - replaced by populateDropdownFromCache and popover functions above)
 
     // ── 헤더 접기/펼치기 ──
     function toggleHeader() {
